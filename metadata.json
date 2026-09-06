@@ -1,0 +1,6 @@
+{
+  "name": "Vagou Pro",
+  "description": "App Empresário do Ecossistema Vagou - Módulo operacional B2B, gestão de agenda, publicação de vagas relâmpago de 5s e theming dinâmico.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
