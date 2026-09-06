@@ -43,9 +43,14 @@ export const IncomingBookingAlertModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/85 backdrop-blur-md animate-in fade-in duration-150">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/85 backdrop-blur-md animate-in fade-in duration-150 overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) dismissIncomingBooking();
+      }}
+    >
       <div
-        className="w-full max-w-lg bg-slate-900 border-2 rounded-3xl p-6 text-white shadow-2xl space-y-5 animate-in zoom-in-95 duration-200"
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-slate-900 border-2 rounded-3xl p-5 sm:p-6 text-white shadow-2xl space-y-4 animate-in zoom-in-95 duration-200"
         style={{
           borderColor: activeSalon.branding.primary_color,
           boxShadow: `0 0 50px ${activeSalon.branding.primary_color}40`,

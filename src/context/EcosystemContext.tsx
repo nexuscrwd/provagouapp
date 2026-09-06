@@ -31,6 +31,7 @@ interface EcosystemContextType {
   activeSalon: Salon;
   setActiveSalonId: (id: string) => void;
   updateSalonBranding: (branding: Partial<SalonBranding>) => void;
+  updateSalonDetails: (updates: { name?: string; logo_url?: string; branding?: Partial<SalonBranding> }) => void;
   professionals: Professional[];
   addProfessional: (prof: Omit<Professional, 'id' | 'salon_id'>) => void;
   updateProfessional: (prof: Professional) => void;
@@ -62,8 +63,8 @@ interface EcosystemContextType {
   isMuted: boolean;
   toggleMute: () => void;
   testSound: () => void;
-  activeScreen: 'agenda' | 'schedule' | 'media' | 'financial';
-  setActiveScreen: (screen: 'agenda' | 'schedule' | 'media' | 'financial') => void;
+  activeScreen: 'agenda' | 'schedule' | 'media' | 'settings' | 'financial';
+  setActiveScreen: (screen: 'agenda' | 'schedule' | 'media' | 'settings' | 'financial') => void;
   isFastPublishOpen: boolean;
   setIsFastPublishOpen: (open: boolean) => void;
   isBrandingCustomizerOpen: boolean;
@@ -123,6 +124,26 @@ export const EcosystemProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             branding: {
               ...s.branding,
               ...brandingUpdates,
+            },
+          };
+        }
+        return s;
+      })
+    );
+    soundManager.playSuccessTone();
+  };
+
+  const updateSalonDetails = (updates: { name?: string; logo_url?: string; branding?: Partial<SalonBranding> }) => {
+    setSalons((prev) =>
+      prev.map((s) => {
+        if (s.id === activeSalon.id) {
+          return {
+            ...s,
+            name: updates.name ?? s.name,
+            branding: {
+              ...s.branding,
+              logo_url: updates.logo_url ?? updates.branding?.logo_url ?? s.branding.logo_url,
+              ...(updates.branding || {}),
             },
           };
         }
@@ -298,6 +319,7 @@ export const EcosystemProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         activeSalon,
         setActiveSalonId,
         updateSalonBranding,
+        updateSalonDetails,
         professionals: currentProfessionals,
         addProfessional,
         updateProfessional,

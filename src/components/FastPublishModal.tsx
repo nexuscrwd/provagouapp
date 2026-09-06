@@ -80,6 +80,14 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
     return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const endTime = calculateEndTime(startTime, slotMinutes);
   const discountPercent = originalPrice > 0 ? Math.round(((originalPrice - promoPrice) / originalPrice) * 100) : 0;
 
@@ -110,15 +118,20 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div
-        className="w-full max-w-xl max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-700/90 rounded-3xl shadow-2xl p-5 sm:p-6 text-white"
+        className="w-full max-w-xl max-h-[90vh] bg-slate-900 border border-slate-700/90 rounded-3xl shadow-2xl text-white flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
         style={{
           borderTop: `4px solid ${activeSalon.branding.primary_color}`,
         }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        {/* Fixed Header */}
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 shrink-0 bg-slate-900">
           <div className="flex items-center gap-2.5">
             <div
               className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg"
@@ -141,13 +154,15 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
           <button
             id="btn-close-fast-publish"
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+            className="p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+            title="Fechar (Esc)"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handlePublish} className="mt-4 space-y-4">
+        {/* Scrollable Form Body */}
+        <form id="fast-publish-form" onSubmit={handlePublish} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
           {/* 1. Escolha do Profissional / Cadeira */}
           <div>
             <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
@@ -341,32 +356,33 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
               })}
             </div>
           </div>
-
-          {/* Action CTA */}
-          <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              id="btn-cancel-publish"
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
-            >
-              Cancelar
-            </button>
-
-            <button
-              type="submit"
-              id="btn-confirm-publish"
-              className="touch-target flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white shadow-xl transition active:scale-95 cursor-pointer"
-              style={{
-                backgroundColor: activeSalon.branding.primary_color,
-                boxShadow: `0 6px 20px ${activeSalon.branding.primary_color}50`,
-              }}
-            >
-              <Zap className="w-4 h-4 fill-white" />
-              <span>Lançar Vaga no Radar Vagou</span>
-            </button>
-          </div>
         </form>
+
+        {/* Fixed Sticky Footer - Always Accessible */}
+        <div className="p-4 sm:px-6 py-3.5 border-t border-slate-800 bg-slate-950/95 backdrop-blur-md shrink-0 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            id="btn-cancel-publish"
+            onClick={onClose}
+            className="min-h-[48px] px-5 py-3 rounded-2xl text-sm font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700/80 border border-slate-700 transition cursor-pointer active:scale-95"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            form="fast-publish-form"
+            id="btn-confirm-publish"
+            className="min-h-[48px] flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm text-white shadow-xl transition active:scale-95 cursor-pointer"
+            style={{
+              backgroundColor: activeSalon.branding.primary_color,
+              boxShadow: `0 6px 20px ${activeSalon.branding.primary_color}50`,
+            }}
+          >
+            <Zap className="w-4 h-4 fill-white" />
+            <span>Lançar Vaga no Radar Vagou</span>
+          </button>
+        </div>
       </div>
     </div>
   );
