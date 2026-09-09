@@ -109,38 +109,10 @@ export const ClientAppView: React.FC = () => {
   return (
     <div
       id="valyioo-client-container"
-      className="flex-1 flex flex-col overflow-hidden relative select-none"
+      className="flex-1 flex flex-col overflow-hidden relative select-none pt-2"
       style={{ backgroundColor: bgColor }}
     >
-      {/* 1. TOP BAR / BARRA DE STATUS & CONTROLE DA BANCADA (Discreto) */}
-      <div className="px-5 pt-2 pb-1 flex items-center justify-between text-slate-800 shrink-0">
-        <span className="text-[12px] font-bold tracking-tight text-stone-900">9:41</span>
-        
-        {/* Controle para o Dono do Salão alternar de volta à bancada */}
-        <button
-          onClick={toggleViewMode}
-          className="px-2 py-0.5 rounded-full bg-stone-200/70 hover:bg-stone-300/80 text-stone-700 text-[10px] font-semibold transition flex items-center gap-1"
-          title="Alternar de volta para o Modo Salão (Bancada)"
-        >
-          <span>Modo Salão</span>
-        </button>
-
-        {/* Ícones da Status Bar (Sinal, Wifi, Bateria) */}
-        <div className="flex items-center gap-1.5 text-stone-800">
-          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-            <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z" opacity="0.3"/>
-            <path d="M12 6c-3.31 0-6 2.69-6 6 0 1.41.49 2.71 1.31 3.74L12 18.5l4.69-2.76C17.51 14.71 18 13.41 18 12c0-3.31-2.69-6-6-6z"/>
-          </svg>
-          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-            <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4z"/>
-          </svg>
-          <div className="w-5 h-2.5 border border-stone-800 rounded-[3px] p-[1px] flex items-center">
-            <div className="h-full w-3.5 bg-stone-800 rounded-[1px]" />
-          </div>
-        </div>
-      </div>
-
-      {/* 2. HEADER DA MARCA (Inspirado exatamente em Valyioo) */}
+      {/* 1. HEADER DA MARCA (Inspirado exatamente em Valyioo) */}
       <div className="px-5 py-2.5 flex items-center justify-between shrink-0">
         {/* Monograma Estilizado à Esquerda */}
         <div className="w-8 flex items-center">
@@ -446,17 +418,24 @@ export const ClientAppView: React.FC = () => {
               </div>
 
               {/* Botões de Ação */}
-              <div className="pt-1 flex gap-2">
+              <div className="pt-1 flex flex-col gap-2">
                 <a
                   href={`https://wa.me/${activeSalon.phone_whatsapp.replace(/\D/g, '')}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex-1 py-2.5 rounded-xl text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition active:scale-95"
+                  className="w-full py-2.5 rounded-xl text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition active:scale-95"
                   style={{ backgroundColor: primaryColor }}
                 >
                   <MessageCircle className="w-4 h-4" />
                   Falar pelo WhatsApp
                 </a>
+
+                <button
+                  onClick={toggleViewMode}
+                  className="w-full py-2 rounded-xl border border-stone-200 bg-stone-50 text-stone-600 text-xs font-semibold hover:bg-stone-100 transition active:scale-98"
+                >
+                  Alternar para Modo Salão (Bancada)
+                </button>
               </div>
             </div>
           </div>

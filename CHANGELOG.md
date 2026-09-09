@@ -142,4 +142,19 @@ Este documento registra todas as alterações arquiteturais, funcionais e de des
 - **Resumo Técnico:**
   - Tela inicial agora apresenta um design limpo, respirado e sem acúmulo de caixas e bordas: cabeçalho de boas-vindas com avatar, botão de ação principal "Agendar Horário" e grid de 4 atalhos rápidos. Todos os agendamentos continuam acessíveis de forma dedicada na aba "Agenda".
 
+---
+
+## 📅 [09/09/2026] - Remoção da Barra de Status Simulada Superior (Focus Mode)
+
+- **Motivo da Mudança:**
+  - Atendimento à seleção direta do usuário via Focus Mode no elemento `div#valyioo-client-container > div:nth-of-type(1)`, solicitando sua exclusão.
+- **Arquivos e Componentes Afetados:**
+  - `src/components/ClientAppView.tsx`:
+    - Exclusão completa da barra de status simulada superior (relógio "9:41", botão e ícones de sinal, wifi e bateria).
+    - O cabeçalho da marca com monograma e nome do salão agora inicia com respiro elegante (`pt-2`).
+    - Adição da ação "Alternar para Modo Salão (Bancada)" de forma contextual e limpa dentro da aba "Perfil", garantindo a navegação completa e preservando a experiência visual nativa do app.
+- **Resumo Técnico:**
+  - Eliminação de elementos visuais simulados que causavam ruído de layout, aproximando o aplicativo da experiência nativa e polida de um app real.
+
+
 
