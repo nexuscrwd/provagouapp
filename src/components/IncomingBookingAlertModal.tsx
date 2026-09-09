@@ -42,6 +42,16 @@ export const IncomingBookingAlertModal: React.FC = () => {
     dismissIncomingBooking();
   };
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && incomingBooking) {
+        dismissIncomingBooking();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [incomingBooking, dismissIncomingBooking]);
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/85 backdrop-blur-md animate-in fade-in duration-150 overflow-y-auto"
@@ -72,15 +82,18 @@ export const IncomingBookingAlertModal: React.FC = () => {
             <div>
               <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
                 <Zap className="w-3.5 h-3.5 fill-amber-400" />
-                Vaga Relâmpago Reservada no Vagou!
+                Vaga Reservada no App Oficial!
               </span>
               <h2 className="text-xl font-black text-white">Nova Reserva Imediata</h2>
             </div>
           </div>
 
           <button
+            type="button"
+            id="btn-close-incoming-alert"
             onClick={dismissIncomingBooking}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+            className="p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+            title="Fechar (Esc)"
           >
             <X className="w-5 h-5" />
           </button>
@@ -132,7 +145,7 @@ export const IncomingBookingAlertModal: React.FC = () => {
           <button
             id="btn-attend-incoming"
             onClick={handleAttendNow}
-            className="touch-target flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-sm text-white shadow-xl transition active:scale-95 cursor-pointer"
+            className="min-h-[48px] flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-sm text-white shadow-xl transition active:scale-95 cursor-pointer"
             style={{
               backgroundColor: activeSalon.branding.primary_color,
             }}
@@ -144,12 +157,21 @@ export const IncomingBookingAlertModal: React.FC = () => {
           <button
             id="btn-confirm-incoming"
             onClick={handleConfirm}
-            className="touch-target flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 shadow transition active:scale-95 cursor-pointer"
+            className="min-h-[48px] flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 shadow transition active:scale-95 cursor-pointer"
           >
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>Confirmar Horário</span>
           </button>
         </div>
+
+        <button
+          type="button"
+          id="btn-dismiss-incoming-bottom"
+          onClick={dismissIncomingBooking}
+          className="w-full min-h-[44px] py-2 text-center text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer"
+        >
+          Fechar alerta sem alterar status
+        </button>
       </div>
     </div>
   );

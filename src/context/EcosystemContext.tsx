@@ -14,6 +14,10 @@ import {
   SalonBranding,
   AppointmentStatus,
   ServiceCategory,
+  SalonService,
+  TemplateStyle,
+  BusinessNiche,
+  TargetAudience,
 } from '../types';
 import {
   INITIAL_SALONS,
@@ -22,9 +26,35 @@ import {
   INITIAL_OFFERS,
   INITIAL_APPOINTMENTS,
   DEFAULT_SCHEDULE_CONFIG,
+  INITIAL_SERVICES_MAP,
   getTodayDateStr,
 } from '../data/initialData';
+import { NICHE_CATALOG, TEMPLATE_DEFINITIONS } from '../data/catalogTemplates';
 import { soundManager } from '../utils/audioAlert';
+
+export interface NewSalonOnboardingData {
+  name: string;
+  owner_name?: string;
+  owner_email?: string;
+  phone_whatsapp: string;
+  phone_landline?: string;
+  address: string;
+  neighborhood: string;
+  city: string;
+  niche: BusinessNiche;
+  target_audience: TargetAudience;
+  template_id: TemplateStyle;
+  branding: SalonBranding;
+  services: Array<{
+    title: string;
+    category: string;
+    duration_minutes: number;
+    price: number;
+    description?: string;
+    rules?: string;
+    image_url?: string;
+  }>;
+}
 
 interface EcosystemContextType {
   salons: Salon[];
@@ -32,6 +62,27 @@ interface EcosystemContextType {
   setActiveSalonId: (id: string) => void;
   updateSalonBranding: (branding: Partial<SalonBranding>) => void;
   updateSalonDetails: (updates: { name?: string; logo_url?: string; branding?: Partial<SalonBranding> }) => void;
+  viewMode: 'salon' | 'client';
+  setViewMode: (mode: 'salon' | 'client') => void;
+  toggleViewMode: () => void;
+  isOnboardingOpen: boolean;
+  setIsOnboardingOpen: (open: boolean) => void;
+  salonServices: SalonService[];
+  addSalonService: (service: Omit<SalonService, 'id' | 'salon_id'>) => void;
+  updateSalonService: (service: SalonService) => void;
+  deleteSalonService: (id: string) => void;
+  createSalonFromOnboarding: (data: NewSalonOnboardingData) => Salon;
+  setSalonTemplate: (templateId: TemplateStyle) => void;
+  bookAppointmentFromClient: (data: {
+    serviceTitle: string;
+    servicePrice: number;
+    professionalId: string;
+    dateStr: string;
+    timeStr: string;
+    clientName: string;
+    clientPhone: string;
+    notes?: string;
+  }) => Appointment;
   professionals: Professional[];
   addProfessional: (prof: Omit<Professional, 'id' | 'salon_id'>) => void;
   updateProfessional: (prof: Professional) => void;
@@ -90,6 +141,11 @@ export const EcosystemProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [incomingBooking, setIncomingBooking] = useState<Appointment | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(false);
 
+  // View Mode: 'salon' (dashboard/bancada) or 'client' (visão do cliente final)
+  const [viewMode, setViewMode] = useState<'salon' | 'client'>('client');
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
+  const [servicesMap, setServicesMap] = useState<Record<string, SalonService[]>>(INITIAL_SERVICES_MAP);
+
   // Dynamic Theming injection into document root (White-label)
   useEffect(() => {
     if (!activeSalon?.branding) return;
@@ -102,7 +158,13 @@ export const EcosystemProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     root.style.setProperty('--brand-accent', accent_color);
     root.style.setProperty('--brand-text-primary', text_primary);
     root.style.setProperty('--brand-text-muted', text_muted);
+    document.title = `${activeSalon.name} — App Oficial`;
   }, [activeSalon]);
+
+  const toggleViewMode = () => {
+    setViewMode((prev) => (prev === 'salon' ? 'client' : 'salon'));
+    soundManager.playSuccessTone();
+  };
 
   // Sync mute state with sound manager
   const toggleMute = () => {
@@ -153,6 +215,31 @@ export const EcosystemProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     soundManager.playSuccessTone();
   };
 
+  const setSalonTemplate = (templateId: TemplateStyle) => {
+    const templateDef = TEMPLATE_DEFINITIONS[templateId];
+    setSalons((prev) =>
+      prev.map((s) => {
+        if (s.id === activeSalon.id) {
+          return {
+            ...s,
+            template_id: templateId,
+            branding: {
+              ...s.branding,
+              primary_color: templateDef.branding.primary_color,
+              secondary_color: templateDef.branding.secondary_color,
+              background_color: templateDef.branding.background_color,
+              accent_color: templateDef.branding.accent_color,
+              text_primary: templateDef.branding.text_primary,
+              text_muted: templateDef.branding.text_muted,
+            },
+          };
+        }
+        return s;
+      })
+    );
+    soundManager.playSuccessTone();
+  };
+
   const currentProfessionals = professionalsMap[activeSalon.id] || [];
 
   const addProfessional = (prof: Omit<Professional, 'id' | 'salon_id'>) => {
@@ -181,6 +268,137 @@ export const EcosystemProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ...prev,
       [activeSalon.id]: (prev[activeSalon.id] || []).filter((p) => p.id !== id),
     }));
+  };
+
+  // Services Management per Salon
+  const currentSalonServices = servicesMap[activeSalon.id] || [];
+
+  const addSalonService = (srv: Omit<SalonService, 'id' | 'salon_id'>) => {
+    const newSrv: SalonService = {
+      ...srv,
+      id: `srv-${Date.now()}`,
+      salon_id: activeSalon.id,
+    };
+    setServicesMap((prev) => ({
+      ...prev,
+      [activeSalon.id]: [...(prev[activeSalon.id] || []), newSrv],
+    }));
+    soundManager.playSuccessTone();
+  };
+
+  const updateSalonService = (updated: SalonService) => {
+    setServicesMap((prev) => ({
+      ...prev,
+      [activeSalon.id]: (prev[activeSalon.id] || []).map((s) => (s.id === updated.id ? updated : s)),
+    }));
+    soundManager.playSuccessTone();
+  };
+
+  const deleteSalonService = (id: string) => {
+    setServicesMap((prev) => ({
+      ...prev,
+      [activeSalon.id]: (prev[activeSalon.id] || []).filter((s) => s.id !== id),
+    }));
+  };
+
+  // Factory to create brand new Salon from Onboarding Wizard
+  const createSalonFromOnboarding = (data: NewSalonOnboardingData): Salon => {
+    const newId = `s-${data.niche}-${Date.now().toString().slice(-6)}`;
+    const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+    const newSalon: Salon = {
+      id: newId,
+      name: data.name,
+      slug,
+      latitude: -23.561684 + (Math.random() - 0.5) * 0.05,
+      longitude: -46.655981 + (Math.random() - 0.5) * 0.05,
+      address: data.address,
+      neighborhood: data.neighborhood,
+      city: data.city,
+      phone_whatsapp: data.phone_whatsapp,
+      phone_landline: data.phone_landline,
+      owner_name: data.owner_name,
+      owner_email: data.owner_email,
+      niche: data.niche,
+      target_audience: data.target_audience,
+      template_id: data.template_id,
+      is_verified: true,
+      branding: data.branding,
+    };
+
+    const builtServices: SalonService[] = data.services.map((s, idx) => ({
+      id: `srv-${newId}-${idx + 1}`,
+      salon_id: newId,
+      title: s.title,
+      category: s.category,
+      duration_minutes: s.duration_minutes,
+      price: s.price,
+      description: s.description,
+      rules: s.rules,
+      image_url: s.image_url,
+    }));
+
+    const nicheTeam = NICHE_CATALOG[data.niche]?.defaultTeam || [
+      {
+        name: data.owner_name || 'Profissional Principal',
+        role: 'Responsável Técnico',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      },
+    ];
+
+    const builtTeam: Professional[] = nicheTeam.map((t, idx) => ({
+      id: `prof-${newId}-${idx + 1}`,
+      salon_id: newId,
+      name: t.name,
+      avatar_url: t.avatar,
+      specialties: [data.services[0]?.title || 'Atendimento'],
+      color_hex: data.branding.primary_color,
+      slot_minutes: 30,
+      is_active: true,
+    }));
+
+    setSalons((prev) => [newSalon, ...prev]);
+    setServicesMap((prev) => ({ ...prev, [newId]: builtServices }));
+    setProfessionalsMap((prev) => ({ ...prev, [newId]: builtTeam }));
+    setActiveSalonId(newId);
+    setIsOnboardingOpen(false);
+    setViewMode('salon');
+    soundManager.playSuccessTone();
+
+    return newSalon;
+  };
+
+  // Direct Booking from Client Mode
+  const bookAppointmentFromClient = (data: {
+    serviceTitle: string;
+    servicePrice: number;
+    professionalId: string;
+    dateStr: string;
+    timeStr: string;
+    clientName: string;
+    clientPhone: string;
+    notes?: string;
+  }): Appointment => {
+    const randomCode = `APP-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const newAppointment: Appointment = {
+      id: `app-client-${Date.now()}`,
+      protocol_code: randomCode,
+      offer_id: `off-custom-${Date.now()}`,
+      salon_id: activeSalon.id,
+      professional_id: data.professionalId,
+      client_name: data.clientName,
+      client_phone: data.clientPhone,
+      status: 'CONFIRMADO',
+      booked_at: new Date().toISOString(),
+      notes: `${data.serviceTitle} (R$ ${data.servicePrice.toFixed(2)}) às ${data.timeStr}. ${data.notes || ''}`,
+    };
+
+    setAppointments((prev) => [newAppointment, ...prev]);
+    setIncomingBooking(newAppointment);
+
+    soundManager.playHighPriorityAlert();
+    return newAppointment;
   };
 
   const addMediaItem = (item: Omit<SalonMedia, 'id' | 'salon_id' | 'uploaded_at'>) => {
@@ -237,7 +455,7 @@ export const EcosystemProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     soundManager.playSuccessTone();
   };
 
-  // Simulate client clicking on "Agendar Vaga" in the consumer app (App Vagou)
+  // Simulate client clicking on "Agendar Vaga" in the consumer app
   const simulateIncomingBooking = (specificOfferId?: string) => {
     // Find an available offer or create an immediate test booking
     const available = specificOfferId 
@@ -293,7 +511,7 @@ export const EcosystemProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       client_phone: client.phone,
       status: 'CONFIRMADO',
       booked_at: new Date().toISOString(),
-      notes: 'Reservado via App Consumidor (Vagou Feed Relâmpago).',
+      notes: 'Reservado online pelo aplicativo oficial do estabelecimento.',
     };
 
     setAppointments((prev) => [newAppointment, ...prev]);
@@ -320,6 +538,18 @@ export const EcosystemProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setActiveSalonId,
         updateSalonBranding,
         updateSalonDetails,
+        viewMode,
+        setViewMode,
+        toggleViewMode,
+        isOnboardingOpen,
+        setIsOnboardingOpen,
+        salonServices: currentSalonServices,
+        addSalonService,
+        updateSalonService,
+        deleteSalonService,
+        createSalonFromOnboarding,
+        setSalonTemplate,
+        bookAppointmentFromClient,
         professionals: currentProfessionals,
         addProfessional,
         updateProfessional,

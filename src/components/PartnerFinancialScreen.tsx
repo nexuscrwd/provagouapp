@@ -139,7 +139,7 @@ export const PartnerFinancialScreen: React.FC = () => {
             {occupancyRate}%
           </div>
           <div className="text-[11px] text-slate-400 mt-1">
-            Horários ociosos recuperados via Vagou
+            Horários ociosos preenchidos pelo app oficial
           </div>
         </div>
 
@@ -243,7 +243,7 @@ export const PartnerFinancialScreen: React.FC = () => {
           <div>
             <h3 className="font-bold text-base text-white">Extrato de Agendamentos & Protocolos</h3>
             <p className="text-xs text-slate-400">
-              Tabela de correspondência com o app consumidor do ecossistema Vagou
+              Tabela de correspondência das reservas realizadas pelo app do estabelecimento
             </p>
           </div>
         </div>

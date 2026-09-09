@@ -125,7 +125,7 @@ export const BrandingCustomizerModal: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Nome, logo e cores do ecossistema
+                Identidade visual exclusiva do estabelecimento
               </p>
             </div>
           </div>

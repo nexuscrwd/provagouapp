@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Salon, Professional, ServiceOffer, Appointment, SalonMedia, SalonScheduleConfig } from '../types';
+import { Salon, Professional, ServiceOffer, Appointment, SalonMedia, SalonScheduleConfig, SalonService } from '../types';
+import { NICHE_CATALOG } from './catalogTemplates';
 
 // Helper to get today's date in YYYY-MM-DD
 export const getTodayDateStr = (): string => {
@@ -12,6 +13,33 @@ export const getTodayDateStr = (): string => {
 };
 
 export const INITIAL_SALONS: Salon[] = [
+  {
+    id: 's-valyioo-00',
+    name: 'Valyioo Salón de Belleza',
+    slug: 'valyioo-salon-belleza',
+    latitude: -23.561684,
+    longitude: -46.655981,
+    address: 'Alameda Gabriel Monteiro da Silva, 1420',
+    neighborhood: 'Jardins',
+    city: 'São Paulo - SP',
+    phone_whatsapp: '+55 11 98877-6655',
+    phone_landline: '(11) 3088-6655',
+    owner_name: 'Valyioo Studio',
+    owner_email: 'contacto@valyioo.com',
+    niche: 'salao_feminino',
+    target_audience: 'adulto',
+    template_id: 'valyioo_chic',
+    is_verified: true,
+    branding: {
+      logo_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=150&auto=format&fit=crop&q=80',
+      primary_color: '#AF585C',      // Terracota / Rosé Queimado de Valyioo
+      secondary_color: '#332D2B',    // Grafite elegante
+      background_color: '#FAF7F6',   // Off-white aconchegante
+      accent_color: '#E8C5BE',       // Rosé suave para badges
+      text_primary: '#1F1A18',
+      text_muted: '#786F6B',
+    },
+  },
   {
     id: 's-vintage-barber-01',
     name: 'Vintage Barber Club',
@@ -22,6 +50,12 @@ export const INITIAL_SALONS: Salon[] = [
     neighborhood: 'Jardins / Bela Vista',
     city: 'São Paulo - SP',
     phone_whatsapp: '+55 11 98765-4321',
+    phone_landline: '(11) 3255-0012',
+    owner_name: 'Rogério Medeiros',
+    owner_email: 'contato@vintagebarber.com.br',
+    niche: 'barbearia',
+    target_audience: 'adulto',
+    template_id: 'dark_luxury',
     is_verified: true,
     branding: {
       logo_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=150&auto=format&fit=crop&q=80',
@@ -43,6 +77,12 @@ export const INITIAL_SALONS: Salon[] = [
     neighborhood: 'Itaim Bibi',
     city: 'São Paulo - SP',
     phone_whatsapp: '+55 11 97123-8899',
+    phone_landline: '(11) 3044-8899',
+    owner_name: 'Juliana Paes Costa',
+    owner_email: 'juliana@bellefemme.com.br',
+    niche: 'salao_feminino',
+    target_audience: 'adulto_infantil',
+    template_id: 'rose_boutique',
     is_verified: true,
     branding: {
       logo_url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=150&auto=format&fit=crop&q=80',
@@ -56,23 +96,29 @@ export const INITIAL_SALONS: Salon[] = [
   },
   {
     id: 's-zen-spa-03',
-    name: 'Espaço Zen & Terapias',
-    slug: 'espaco-zen-terapias',
+    name: 'Kamila Holloway Lash & Spa',
+    slug: 'kamila-holloway-lash-spa',
     latitude: -23.550520,
     longitude: -46.633308,
     address: 'Alameda Santos, 980',
     neighborhood: 'Cerqueira César',
     city: 'São Paulo - SP',
     phone_whatsapp: '+55 11 96543-2109',
+    phone_landline: '(11) 3888-2109',
+    owner_name: 'Kamila Holloway',
+    owner_email: 'kamila@glowandgrace.com',
+    niche: 'cilios_sobrancelhas',
+    target_audience: 'adulto',
+    template_id: 'organic_beige',
     is_verified: true,
     branding: {
-      logo_url: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=150&auto=format&fit=crop&q=80',
-      primary_color: '#10B981',      // Emerald 500
-      secondary_color: '#064E3B',    // Emerald 900
-      background_color: '#04130F',   // Deep Forest Dark
-      accent_color: '#34D399',       // Emerald 400
-      text_primary: '#FFFFFF',
-      text_muted: '#6EE7B7',
+      logo_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+      primary_color: '#C27838',      // Terracota
+      secondary_color: '#26221E',
+      background_color: '#141210',
+      accent_color: '#E09855',
+      text_primary: '#FBF9F5',
+      text_muted: '#B0A79E',
     },
   },
   {
@@ -85,20 +131,130 @@ export const INITIAL_SALONS: Salon[] = [
     neighborhood: 'Pinheiros',
     city: 'São Paulo - SP',
     phone_whatsapp: '+55 11 99887-1122',
+    phone_landline: '(11) 3031-1122',
+    owner_name: 'Diego Alencar',
+    owner_email: 'diego@urbanfade.com',
+    niche: 'barbearia',
+    target_audience: 'adulto_infantil',
+    template_id: 'modern_tech',
     is_verified: true,
     branding: {
       logo_url: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=150&auto=format&fit=crop&q=80',
-      primary_color: '#3B82F6',      // Blue 500
-      secondary_color: '#1E293B',    // Slate 800
-      background_color: '#080E1A',   // Deep Navy Dark
-      accent_color: '#60A5FA',       // Blue 400
-      text_primary: '#FFFFFF',
-      text_muted: '#93C5FD',
+      primary_color: '#10B981',      // Emerald 500
+      secondary_color: '#064E3B',    // Slate 800
+      background_color: '#05130E',   // Deep Forest Dark
+      accent_color: '#34D399',       // Emerald 400
+      text_primary: '#ECFDF5',
+      text_muted: '#6EE7B7',
     },
   },
 ];
 
+export const INITIAL_SERVICES_MAP: Record<string, SalonService[]> = {
+  's-valyioo-00': [
+    {
+      id: 'srv-val-01',
+      salon_id: 's-valyioo-00',
+      title: 'Corte + Balayage',
+      category: 'cabelo',
+      duration_minutes: 120,
+      price: 280,
+      description: 'Clareamento degradê personalizado com mechas suaves, proteção capilar e corte visagista com finalização.',
+      rules: 'Recomenda-se teste de mechas prévio para cabelos com químicas anteriores.',
+      image_url: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 'srv-val-02',
+      salon_id: 's-valyioo-00',
+      title: 'Balayage & Iluminação Glow',
+      category: 'cabelo',
+      duration_minutes: 150,
+      price: 320,
+      description: 'Iluminação multidimensional com reflexos quentes ou frios e tratamento reconstrutor.',
+      image_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 'srv-val-03',
+      salon_id: 's-valyioo-00',
+      title: 'Corte Visagista & Styling',
+      category: 'cabelo',
+      duration_minutes: 60,
+      price: 130,
+      description: 'Análise morfológica facial, corte personalizado na tesoura, lavagem relaxante e escova modelada.',
+      image_url: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=600&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 'srv-val-04',
+      salon_id: 's-valyioo-00',
+      title: 'Hidratação & Spa Capilar de Luxo',
+      category: 'cabelo',
+      duration_minutes: 50,
+      price: 140,
+      description: 'Nutrição lipídica intensiva com massagem no couro cabeludo e óleos botânicos nobres.',
+      image_url: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=600&auto=format&fit=crop&q=80',
+    },
+    {
+      id: 'srv-val-05',
+      salon_id: 's-valyioo-00',
+      title: 'Design de Sobrancelhas & Lash Lifting',
+      category: 'estetica',
+      duration_minutes: 50,
+      price: 110,
+      description: 'Alinhamento dos fios naturais com curvatura acentuada e tintura de longa duração.',
+      image_url: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=600&auto=format&fit=crop&q=80',
+    },
+  ],
+  's-vintage-barber-01': NICHE_CATALOG.barbearia.services.map((s) => ({
+    ...s,
+    salon_id: 's-vintage-barber-01',
+  })),
+  's-belle-femme-02': NICHE_CATALOG.salao_feminino.services.map((s) => ({
+    ...s,
+    salon_id: 's-belle-femme-02',
+  })),
+  's-zen-spa-03': NICHE_CATALOG.cilios_sobrancelhas.services.map((s) => ({
+    ...s,
+    salon_id: 's-zen-spa-03',
+  })),
+  's-urban-lab-04': NICHE_CATALOG.barbearia.services.map((s) => ({
+    ...s,
+    salon_id: 's-urban-lab-04',
+  })),
+};
+
 export const INITIAL_PROFESSIONALS: Record<string, Professional[]> = {
+  's-valyioo-00': [
+    {
+      id: 'prof-val-01',
+      salon_id: 's-valyioo-00',
+      name: 'María López',
+      avatar_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+      specialties: ['cabelo', 'beleza'],
+      color_hex: '#AF585C',
+      slot_minutes: 60,
+      is_active: true,
+    },
+    {
+      id: 'prof-val-02',
+      salon_id: 's-valyioo-00',
+      name: 'Camila Rios',
+      avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+      specialties: ['cabelo', 'estetica'],
+      color_hex: '#C27838',
+      slot_minutes: 60,
+      is_active: true,
+    },
+    {
+      id: 'prof-val-03',
+      salon_id: 's-valyioo-00',
+      name: 'Sofia Mendes',
+      avatar_url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+      specialties: ['unhas', 'estetica'],
+      color_hex: '#E1708A',
+      slot_minutes: 50,
+      is_active: true,
+    },
+  ],
   's-vintage-barber-01': [
     {
       id: 'prof-01',
@@ -228,6 +384,36 @@ export const INITIAL_MEDIA_LIBRARY: SalonMedia[] = [
 
 export const INITIAL_OFFERS: ServiceOffer[] = [
   {
+    id: 'off-val-01',
+    salon_id: 's-valyioo-00',
+    professional_id: 'prof-val-01',
+    service_title: 'Corte + Balayage Glow',
+    category: 'cabelo',
+    original_price: 320.0,
+    price: 249.0,
+    date_str: getTodayDateStr(),
+    start_time: '14:00',
+    end_time: '16:00',
+    video_url: 'https://assets.mixkit.co/videos/preview/mixkit-woman-washing-her-hair-in-a-salon-43405-large.mp4',
+    status: 'AVAILABLE',
+    expires_at: new Date(Date.now() + 1000 * 60 * 90).toISOString(),
+  },
+  {
+    id: 'off-val-02',
+    salon_id: 's-valyioo-00',
+    professional_id: 'prof-val-02',
+    service_title: 'Hidratação & Spa Capilar',
+    category: 'cabelo',
+    original_price: 140.0,
+    price: 99.0,
+    date_str: getTodayDateStr(),
+    start_time: '16:30',
+    end_time: '17:20',
+    video_url: 'https://assets.mixkit.co/videos/preview/mixkit-woman-smiling-with-her-hair-done-43408-large.mp4',
+    status: 'AVAILABLE',
+    expires_at: new Date(Date.now() + 1000 * 60 * 140).toISOString(),
+  },
+  {
     id: 'off-01',
     salon_id: 's-vintage-barber-01',
     professional_id: 'prof-01',
@@ -285,7 +471,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
     client_phone: '(11) 98341-2099',
     status: 'EM_ATENDIMENTO',
     booked_at: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
-    notes: 'Cliente de primeira viagem pelo app Vagou.',
+    notes: 'Cliente de primeira viagem pelo aplicativo oficial.',
   },
   {
     id: 'app-02',

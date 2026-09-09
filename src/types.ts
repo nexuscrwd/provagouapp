@@ -3,6 +3,24 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+export type TemplateStyle =
+  | 'valyioo_chic'
+  | 'dark_luxury'
+  | 'organic_beige'
+  | 'rose_boutique'
+  | 'clean_editorial'
+  | 'modern_tech';
+
+export type BusinessNiche =
+  | 'barbearia'
+  | 'salao_feminino'
+  | 'unhas'
+  | 'cilios_sobrancelhas'
+  | 'estetica_spa'
+  | 'unissex';
+
+export type TargetAudience = 'adulto' | 'infantil' | 'adulto_infantil';
+
 export interface SalonBranding {
   logo_url: string;
   primary_color: string;
@@ -11,6 +29,18 @@ export interface SalonBranding {
   accent_color: string;
   text_primary: string;
   text_muted: string;
+}
+
+export interface SalonService {
+  id: string;
+  salon_id: string;
+  title: string;
+  category: string;
+  description?: string;
+  duration_minutes: number;
+  price: number;
+  rules?: string;
+  image_url?: string;
 }
 
 export interface Salon {
@@ -23,6 +53,12 @@ export interface Salon {
   neighborhood: string;
   city: string;
   phone_whatsapp: string;
+  phone_landline?: string;
+  owner_name?: string;
+  owner_email?: string;
+  niche?: BusinessNiche;
+  target_audience?: TargetAudience;
+  template_id?: TemplateStyle;
   branding: SalonBranding;
   is_verified: boolean;
 }

@@ -36,7 +36,7 @@ export const BottomNav: React.FC = () => {
   return (
     <nav
       id="bottom-nav-bar"
-      className="fixed bottom-0 z-40 w-full max-w-md bg-slate-950/95 backdrop-blur-md border-t border-slate-800/90 px-2 py-1.5 flex items-center justify-around shadow-2xl"
+      className="w-full px-2 py-1 flex items-center justify-around"
     >
       {NAV_ITEMS.map((item) => {
         const isActive = activeScreen === item.id;

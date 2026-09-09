@@ -99,13 +99,13 @@ export const SalonMediaLibraryScreen: React.FC<SalonMediaLibraryScreenProps> = (
       <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-xl flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-white">Biblioteca de Mídia do Radar (5s)</h2>
+            <h2 className="text-lg font-bold text-white">Biblioteca de Mídia (5s Stories)</h2>
             <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
               {mediaLibrary.length} Itens
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1 max-w-xl">
-            Vídeos curtos de 5 segundos que aparecem no feed estilo Reels do App Consumidor (Vagou). Vagas com vídeo convertem 3.4x mais rápido.
+            Vídeos curtos de 5 segundos para Stories e Reels no aplicativo do estabelecimento. Vagas com vídeo convertem até 3.4x mais rápido.
           </p>
         </div>
 
@@ -240,7 +240,7 @@ export const SalonMediaLibraryScreen: React.FC<SalonMediaLibraryScreenProps> = (
                       <button
                         onClick={() => setPlayingMediaId(media.id)}
                         className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-amber-500/90 hover:bg-amber-400 flex items-center justify-center text-slate-950 shadow-2xl transition group-hover:scale-110 cursor-pointer"
-                        title="Simular visualização de 5 segundos no App Consumidor"
+                        title="Pré-visualizar vídeo de 5 segundos"
                       >
                         <Play className="w-5 h-5 fill-slate-950 ml-0.5" />
                       </button>
@@ -268,7 +268,7 @@ export const SalonMediaLibraryScreen: React.FC<SalonMediaLibraryScreenProps> = (
                     title="Lançar vaga relâmpago usando este vídeo"
                   >
                     <Zap className="w-3.5 h-3.5 fill-amber-300" />
-                    <span>Usar no Radar</span>
+                    <span>Divulgar Vaga</span>
                   </button>
 
                   <button
@@ -292,7 +292,7 @@ export const SalonMediaLibraryScreen: React.FC<SalonMediaLibraryScreenProps> = (
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <Video className="w-5 h-5 text-amber-400" />
-                <h3 className="font-bold text-base text-white">Cadastrar Mídia para o Radar</h3>
+                <h3 className="font-bold text-base text-white">Cadastrar Nova Mídia</h3>
               </div>
               <button
                 onClick={() => setIsAddModalOpen(false)}
@@ -344,7 +344,7 @@ export const SalonMediaLibraryScreen: React.FC<SalonMediaLibraryScreenProps> = (
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Categoria do Radar</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Categoria de Serviço</label>
                 <select
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value as ServiceCategory)}

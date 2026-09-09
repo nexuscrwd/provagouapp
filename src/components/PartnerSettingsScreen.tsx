@@ -18,7 +18,13 @@ import {
   Users,
   ShieldCheck,
   BellRing,
+  LayoutTemplate,
+  Plus,
+  Eye,
+  Check,
 } from 'lucide-react';
+import { TEMPLATE_DEFINITIONS } from '../data/catalogTemplates';
+import { TemplateStyle } from '../types';
 
 export const PartnerSettingsScreen: React.FC = () => {
   const {
@@ -26,6 +32,9 @@ export const PartnerSettingsScreen: React.FC = () => {
     salons,
     setActiveSalonId,
     setIsBrandingCustomizerOpen,
+    setIsOnboardingOpen,
+    setSalonTemplate,
+    toggleViewMode,
     isMuted,
     toggleMute,
     testSound,
@@ -93,11 +102,11 @@ export const PartnerSettingsScreen: React.FC = () => {
         </button>
       </div>
 
-      {/* 2. Seleção de Unidade / Salão do Ecossistema */}
+      {/* 2. Seleção de Unidade / Filial */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-2.5">
         <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
           <Building2 className="w-3.5 h-3.5 text-amber-400" />
-          <span>Trocar Unidade (Ecossistema Vagou)</span>
+          <span>Trocar Unidade / Filial</span>
         </div>
         <div className="space-y-1.5">
           {salons.map((salon) => {
@@ -123,6 +132,72 @@ export const PartnerSettingsScreen: React.FC = () => {
                   <span className="text-[10px] font-bold text-amber-400 uppercase">Ativo</span>
                 ) : (
                   <span className="text-[10px] text-slate-500">Alternar</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={() => setIsOnboardingOpen(true)}
+          className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Cadastrar Novo Estabelecimento (Setup 5 Minutos)</span>
+        </button>
+      </div>
+
+      {/* 2.1. Modelos de Templates Oficiais (5 Modelos Baseados nas Imagens) */}
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <LayoutTemplate className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Modelo de Template do App</span>
+          </div>
+          <button
+            onClick={toggleViewMode}
+            className="text-[11px] text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            Ver no App do Cliente
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {(Object.values(TEMPLATE_DEFINITIONS) as typeof TEMPLATE_DEFINITIONS[TemplateStyle][]).map((tpl) => {
+            const isCurrent = activeSalon.template_id === tpl.id;
+            return (
+              <button
+                key={tpl.id}
+                onClick={() => setSalonTemplate(tpl.id)}
+                className={`w-full p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
+                  isCurrent
+                    ? 'bg-slate-800 border-emerald-500 shadow-md ring-1 ring-emerald-500'
+                    : 'bg-slate-850 hover:bg-slate-800 border-slate-800'
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className="w-4 h-4 rounded-full border border-slate-700 shrink-0"
+                    style={{ backgroundColor: tpl.branding.primary_color }}
+                  />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-bold text-white truncate">{tpl.name}</p>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded border ${tpl.badgeClass}`}>
+                        {tpl.id}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">{tpl.tagline}</p>
+                  </div>
+                </div>
+                {isCurrent ? (
+                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider shrink-0 flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    Ativo
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-slate-500 shrink-0">Aplicar</span>
                 )}
               </button>
             );
@@ -207,6 +282,13 @@ export const PartnerSettingsScreen: React.FC = () => {
             <div className="text-[10px] text-blue-400 mt-0.5">{confirmedCount} confirmados</div>
           </div>
         </div>
+      </div>
+
+      {/* Rodapé com créditos discretos (conforme solicitado) */}
+      <div className="pt-2 text-center">
+        <p className="text-[11px] text-slate-500 font-medium tracking-wide">
+          Tecnologia por <span className="text-slate-400 font-semibold">Vagou</span> • v2.4
+        </p>
       </div>
     </div>
   );

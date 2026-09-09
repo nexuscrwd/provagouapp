@@ -146,7 +146,7 @@ export const PartnerScheduleConfigScreen: React.FC = () => {
             <div>
               <h3 className="font-bold text-base text-white">Configuração de Expediente & Escala</h3>
               <p className="text-xs text-slate-400">
-                Determina os horários disponíveis para publicação de vagas relâmpago no radar
+                Determina os horários de atendimento da equipe e vagas disponíveis no aplicativo
               </p>
             </div>
           </div>

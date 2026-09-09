@@ -13,11 +13,14 @@ import { SalonMediaLibraryScreen } from './components/SalonMediaLibraryScreen';
 import { PartnerSettingsScreen } from './components/PartnerSettingsScreen';
 import { IncomingBookingAlertModal } from './components/IncomingBookingAlertModal';
 import { BrandingCustomizerModal } from './components/BrandingCustomizerModal';
+import { SalonOnboardingModal } from './components/SalonOnboardingModal';
+import { ClientAppView } from './components/ClientAppView';
 import { BottomNav } from './components/BottomNav';
 
 const AppContent: React.FC = () => {
   const {
     activeScreen,
+    viewMode,
     isFastPublishOpen,
     setIsFastPublishOpen,
   } = useEcosystem();
@@ -38,44 +41,61 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex justify-center antialiased selection:bg-amber-500 selection:text-white">
-      {/* 1. ESTRUTURA DO CONTAINER (MOLDURA DE SMARTPHONE ESTRITA: max-w-md, 430px centralizado) */}
-      <div className="w-full max-w-md min-h-screen bg-slate-950 text-white flex flex-col relative shadow-2xl overflow-x-hidden pb-20">
-        {/* 2. NOVO CABEÇALHO SUPERIOR (STICKY TOP-0 Z-40) */}
-        <Header />
+    <div className="h-[100dvh] w-full bg-[#151A1E] sm:bg-slate-200 flex justify-center items-center antialiased overflow-hidden">
+      {/* Moldura de Smartphone Centralizada */}
+      <main className="w-full max-w-md h-[100dvh] bg-slate-950 text-slate-100 flex flex-col relative shadow-2xl overflow-hidden font-sans">
+        {/* CABEÇALHO COMPACTO SUPERIOR (Apenas no Modo Bancada) */}
+        {viewMode === 'salon' && <Header />}
 
-        {/* Telas Principais */}
-        <main className="flex-1 w-full px-3 py-3">
-          {activeScreen === 'agenda' && (
-            <PartnerAgendaScreen onOpenFastPublish={handleOpenFastPublish} />
-          )}
+        {/* MODO CLIENTE FINAL (CONSUMER VIEW - 100% FIEL À REFERÊNCIA VALYIOO) */}
+        {viewMode === 'client' ? (
+          <ClientAppView />
+        ) : (
+          /* MODO BANCADA DO SALÃO (PARTNER MANAGEMENT) */
+          <>
+            <div className="flex-1 min-h-0 w-full overflow-y-auto overflow-x-hidden relative bg-slate-950 p-3">
+              {activeScreen === 'agenda' && (
+                <PartnerAgendaScreen onOpenFastPublish={handleOpenFastPublish} />
+              )}
 
-          {activeScreen === 'media' && (
-            <SalonMediaLibraryScreen onPublishWithMedia={handlePublishWithMedia} />
-          )}
+              {activeScreen === 'media' && (
+                <SalonMediaLibraryScreen onPublishWithMedia={handlePublishWithMedia} />
+              )}
 
-          {activeScreen === 'schedule' && (
-            <PartnerScheduleConfigScreen />
-          )}
+              {activeScreen === 'schedule' && (
+                <PartnerScheduleConfigScreen />
+              )}
 
-          {activeScreen === 'settings' && (
-            <PartnerSettingsScreen />
-          )}
-        </main>
+              {activeScreen === 'settings' && (
+                <PartnerSettingsScreen />
+              )}
 
-        {/* 5. MENU INFERIOR FIXO (BOTTOM NAV): [📅 Agenda] [🎬 Vídeos 5s] [👥 Equipe] [⚙️ Configurações] */}
-        <BottomNav />
+              {/* Rodapé com créditos discretos */}
+              <footer className="pt-2 pb-1 text-center select-none">
+                <p className="text-[10px] text-slate-500 font-medium tracking-wide">
+                  Tecnologia por <span className="text-slate-400 font-semibold">Vagou</span>
+                </p>
+              </footer>
+            </div>
 
-        {/* Modals & Overlays */}
-        <FastPublishModal
-          isOpen={isFastPublishOpen}
-          onClose={() => setIsFastPublishOpen(false)}
-          initialProfessionalId={fastPublishInitialProfId}
-          initialStartTime={fastPublishInitialTime}
-        />
-        <BrandingCustomizerModal />
-        <IncomingBookingAlertModal />
-      </div>
+            {/* MENU INFERIOR FIXO (BOTTOM NAV - apenas na Bancada) */}
+            <div className="shrink-0 z-30 w-full bg-slate-900 border-t border-slate-800">
+              <BottomNav />
+            </div>
+          </>
+        )}
+      </main>
+
+      {/* Modais Globais */}
+      <FastPublishModal
+        isOpen={isFastPublishOpen}
+        onClose={() => setIsFastPublishOpen(false)}
+        initialProfessionalId={fastPublishInitialProfId}
+        initialStartTime={fastPublishInitialTime}
+      />
+      <BrandingCustomizerModal />
+      <SalonOnboardingModal />
+      <IncomingBookingAlertModal />
     </div>
   );
 };

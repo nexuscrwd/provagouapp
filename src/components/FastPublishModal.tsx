@@ -5,56 +5,40 @@
 
 import React, { useState } from 'react';
 import { useEcosystem } from '../context/EcosystemContext';
-import { ServiceCategory, SalonMedia } from '../types';
+import { ServiceCategory } from '../types';
 import { getTodayDateStr } from '../data/initialData';
 import {
   X,
   Zap,
   Clock,
   User,
-  DollarSign,
   Video,
-  Play,
   Check,
-  Tag,
-  Sparkles,
 } from 'lucide-react';
 
 interface FastPublishModalProps {
+  isOpen: boolean;
   initialProfessionalId?: string;
   initialStartTime?: string;
   onClose: () => void;
 }
 
-const SERVICE_PRESETS: {
-  title: string;
-  category: ServiceCategory;
-  defaultPrice: number;
-  promoPrice: number;
-}[] = [
-  { title: 'Degradê Navalhado + Barboterapia', category: 'cabelo', defaultPrice: 85, promoPrice: 55 },
-  { title: 'Corte Tradicional na Tesoura', category: 'cabelo', defaultPrice: 70, promoPrice: 45 },
-  { title: 'Barba Alinhada com Toalha Quente', category: 'barba', defaultPrice: 55, promoPrice: 35 },
-  { title: 'Design de Barba + Pigmentação', category: 'barba', defaultPrice: 65, promoPrice: 42 },
-  { title: 'Escova Modelada + Hidratação Flash', category: 'cabelo', defaultPrice: 90, promoPrice: 60 },
-  { title: 'Unhas em Gel / Esmaltação em Gel', category: 'unhas', defaultPrice: 80, promoPrice: 55 },
-  { title: 'Massagem Relaxante Express (30m)', category: 'estetica', defaultPrice: 100, promoPrice: 69 },
-];
-
 export const FastPublishModal: React.FC<FastPublishModalProps> = ({
+  isOpen,
   initialProfessionalId,
   initialStartTime,
   onClose,
 }) => {
-  const { activeSalon, professionals, mediaLibrary, publishOffer } = useEcosystem();
+  const { activeSalon, professionals, mediaLibrary, publishOffer, setIsFastPublishOpen } = useEcosystem();
+
+  const handleClose = () => {
+    setIsFastPublishOpen(false);
+    onClose();
+  };
 
   const [selectedProfId, setSelectedProfId] = useState<string>(
     initialProfessionalId || professionals[0]?.id || ''
   );
-  const [serviceTitle, setServiceTitle] = useState<string>(SERVICE_PRESETS[0].title);
-  const [category, setCategory] = useState<ServiceCategory>(SERVICE_PRESETS[0].category);
-  const [originalPrice, setOriginalPrice] = useState<number>(SERVICE_PRESETS[0].defaultPrice);
-  const [promoPrice, setPromoPrice] = useState<number>(SERVICE_PRESETS[0].promoPrice);
   const [startTime, setStartTime] = useState<string>(
     initialStartTime ||
       (() => {
@@ -64,12 +48,27 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
       })()
   );
 
+  React.useEffect(() => {
+    if (initialProfessionalId) {
+      setSelectedProfId(initialProfessionalId);
+    }
+    if (initialStartTime) {
+      setStartTime(initialStartTime);
+    }
+  }, [initialProfessionalId, initialStartTime, isOpen]);
+
   // Pick first 5s video by default
   const defaultMedia = mediaLibrary.find((m) => m.type === 'video_5s') || mediaLibrary[0];
   const [selectedMediaId, setSelectedMediaId] = useState<string>(defaultMedia?.id || '');
 
   const activeProf = professionals.find((p) => p.id === selectedProfId) || professionals[0];
   const slotMinutes = activeProf?.slot_minutes || 45;
+  const serviceTitle = activeProf?.specialties?.[0] || 'Atendimento Cadeira';
+  const category: ServiceCategory = activeProf?.specialties?.some((s) => s.toLowerCase().includes('barba'))
+    ? 'barba'
+    : 'cabelo';
+  const originalPrice = 70;
+  const promoPrice = 49;
 
   // Calculate end time
   const calculateEndTime = (start: string, durationMinutes: number) => {
@@ -82,21 +81,15 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && isOpen) handleClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   const endTime = calculateEndTime(startTime, slotMinutes);
-  const discountPercent = originalPrice > 0 ? Math.round(((originalPrice - promoPrice) / originalPrice) * 100) : 0;
-
-  const handleSelectPreset = (preset: (typeof SERVICE_PRESETS)[0]) => {
-    setServiceTitle(preset.title);
-    setCategory(preset.category);
-    setOriginalPrice(preset.defaultPrice);
-    setPromoPrice(preset.promoPrice);
-  };
 
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,22 +99,22 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
       professional_id: selectedProfId,
       service_title: serviceTitle,
       category,
-      original_price: Number(originalPrice),
-      price: Number(promoPrice),
+      original_price: originalPrice,
+      price: promoPrice,
       date_str: getTodayDateStr(),
       start_time: startTime,
       end_time: endTime,
       video_url: media ? media.url : 'https://assets.mixkit.co/videos/preview/mixkit-barber-using-a-razor-to-cut-hair-43407-large.mp4',
     });
 
-    onClose();
+    handleClose();
   };
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) handleClose();
       }}
     >
       <div
@@ -141,19 +134,20 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
             </div>
             <div>
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                Publicar Vaga Relâmpago
+                Divulgar Vaga!
                 <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  Radar 5s
+                  Flash 5s
                 </span>
               </h2>
               <p className="text-xs text-slate-400">
-                Disparo instantâneo em 2 toques para clientes próximos ao salão
+                Divulgação instantânea no radar do app para clientes do salão
               </p>
             </div>
           </div>
           <button
+            type="button"
             id="btn-close-fast-publish"
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2.5 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
             title="Fechar (Esc)"
           >
@@ -201,7 +195,7 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
             </div>
           </div>
 
-          {/* 2. Horário do Vazio */}
+          {/* 2. Horário da Vaga */}
           <div className="bg-slate-800/40 p-3 rounded-2xl border border-slate-800">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -229,90 +223,12 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
             </div>
           </div>
 
-          {/* 3. Serviço & Preço Promocional Relâmpago */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5" style={{ color: activeSalon.branding.accent_color }} />
-                2. Serviço & Desconto Relâmpago
-              </label>
-              <span className="text-[11px] text-slate-400">Atalhos rápidos:</span>
-            </div>
-
-            {/* Quick Presets chips */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar">
-              {SERVICE_PRESETS.slice(0, 4).map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleSelectPreset(preset)}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 hover:text-white border border-slate-700/60 transition whitespace-nowrap cursor-pointer"
-                >
-                  {preset.title.split('+')[0].trim()}
-                </button>
-              ))}
-            </div>
-
-            <div className="space-y-2 mt-1">
-              <input
-                type="text"
-                id="input-service-title"
-                value={serviceTitle}
-                onChange={(e) => setServiceTitle(e.target.value)}
-                placeholder="Título do serviço (ex: Degradê + Barboterapia)"
-                className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500"
-                required
-              />
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="text-[11px] text-slate-400 block mb-1">Preço Normal (Tabela)</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-2 text-xs text-slate-400">R$</span>
-                    <input
-                      type="number"
-                      step="0.50"
-                      id="input-original-price"
-                      value={originalPrice}
-                      onChange={(e) => setOriginalPrice(Number(e.target.value))}
-                      className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-500"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] text-amber-300 font-semibold block mb-1">Preço Relâmpago ⚡</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-2 text-xs text-amber-400 font-bold">R$</span>
-                    <input
-                      type="number"
-                      step="0.50"
-                      id="input-promo-price"
-                      value={promoPrice}
-                      onChange={(e) => setPromoPrice(Number(e.target.value))}
-                      className="w-full bg-slate-800/80 border border-amber-500/60 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-amber-300 font-bold focus:outline-none focus:border-amber-500"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="col-span-2 sm:col-span-1 flex items-center justify-center p-2 rounded-xl bg-amber-500/10 border border-amber-500/30">
-                  <div className="text-center">
-                    <div className="text-[10px] text-slate-300 uppercase tracking-wider">Desconto</div>
-                    <div className="text-base font-black text-amber-400">-{discountPercent}%</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 4. Escolha do Vídeo de 5s da Biblioteca */}
+          {/* 3. Escolha do Vídeo de 5s da Biblioteca */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                 <Video className="w-3.5 h-3.5" style={{ color: activeSalon.branding.accent_color }} />
-                3. Vídeo Reels de 5s do Radar
+                2. Vídeo Reels de 5s (Stories do App)
               </label>
               <span className="text-[11px] text-slate-400">Garante visualização no feed</span>
             </div>
@@ -363,7 +279,7 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
           <button
             type="button"
             id="btn-cancel-publish"
-            onClick={onClose}
+            onClick={handleClose}
             className="min-h-[48px] px-5 py-3 rounded-2xl text-sm font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700/80 border border-slate-700 transition cursor-pointer active:scale-95"
           >
             Cancelar
@@ -380,7 +296,7 @@ export const FastPublishModal: React.FC<FastPublishModalProps> = ({
             }}
           >
             <Zap className="w-4 h-4 fill-white" />
-            <span>Lançar Vaga no Radar Vagou</span>
+            <span>Divulgar Vaga!</span>
           </button>
         </div>
       </div>
