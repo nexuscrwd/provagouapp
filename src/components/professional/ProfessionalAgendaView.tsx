@@ -4,7 +4,7 @@ import {
   Plus, Phone, User, Check, X,
   AlertCircle, MessageSquare, ExternalLink,
   DollarSign, Scissors, Mail,
-  ChevronLeft, ChevronRight, RefreshCw, Send, ShieldCheck
+  ChevronLeft, ChevronRight, ChevronDown, RefreshCw, Send, ShieldCheck
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { BookingAppointment, CatalogServiceItem, SalonProfessionalItem } from '../../types';
@@ -134,6 +134,17 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
 
   const [timeFilter, setTimeFilter] = useState<'proximo' | 'hoje' | 'semana' | 'mes'>('hoje');
   const [filter, setFilter] = useState<'todos' | 'confirmados' | 'pendentes' | 'concluidos' | 'cancelados'>('todos');
+  
+  // Categorias colapsáveis na agenda
+  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
+
+  const toggleCategory = (catKey: string) => {
+    hapticLight();
+    setCollapsedCategories((prev) => ({
+      ...prev,
+      [catKey]: !prev[catKey],
+    }));
+  };
   
   // Modais
   const [selectedAppointment, setSelectedAppointment] = useState<BookingAppointment | null>(null);
@@ -443,85 +454,7 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
         </div>
       </div>
 
-      {/* 3. Filtros Duplos de Data (Período) e Status da Demanda */}
-      <div className={`px-3.5 py-2 border-b flex flex-col gap-2 shrink-0 ${
-        isDark ? 'bg-slate-950 border-slate-800/60' : 'bg-slate-50 border-slate-200'
-      }`}>
-        {/* Primeira Linha: Período (Próximo, Hoje, Semana, Mês) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-          {(
-            [
-              { id: 'proximo', label: 'Próximo' },
-              { id: 'hoje', label: 'Hoje' },
-              { id: 'semana', label: 'Semana' },
-              { id: 'mes', label: 'Mês' },
-            ] as const
-          ).map((tTab) => {
-            return (
-              <button
-                key={tTab.id}
-                type="button"
-                onClick={() => {
-                  hapticLight();
-                  setTimeFilter(tTab.id);
-                }}
-                className={`px-2.5 py-1 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition cursor-pointer whitespace-nowrap border flex items-center gap-1 active:scale-98 ${
-                  timeFilter === tTab.id
-                    ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
-                    : isDark
-                    ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-                    : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {tTab.label}
-              </button>
-            );
-          })}
-        </div>
 
-        {/* Segunda Linha: Status (Confirmado, Pendentes, Concluidos, Cancelados) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-          {(
-            [
-              { id: 'todos', label: 'Todos' },
-              { id: 'confirmados', label: 'Confirmado' },
-              { id: 'pendentes', label: 'Pendentes' },
-              { id: 'concluidos', label: 'Concluído' },
-              { id: 'cancelados', label: 'Cancelados' },
-            ] as const
-          ).map((sTab) => {
-            const count = categoryCounts[sTab.id] || 0;
-            return (
-              <button
-                key={sTab.id}
-                type="button"
-                onClick={() => {
-                  hapticLight();
-                  setFilter(sTab.id);
-                }}
-                className={`px-2.5 py-1 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition cursor-pointer whitespace-nowrap border flex items-center gap-1 active:scale-98 ${
-                  filter === sTab.id
-                    ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
-                    : isDark
-                    ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-                    : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <span>{sTab.label}</span>
-                <span className={`px-1 py-0.2 rounded-[4px] text-[8.5px] font-mono font-bold ${
-                  filter === sTab.id
-                    ? 'bg-emerald-600 text-white'
-                    : isDark
-                    ? 'bg-slate-800 text-slate-300'
-                    : 'bg-slate-100 text-slate-700'
-                }`}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* 4. Lista Ordenada pela Demanda do Dia (Confirmados -> Pendentes -> Concluídos -> Cancelados) */}
       <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1.5">
@@ -536,84 +469,102 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
             </p>
           </div>
         ) : (
-          sortedAppointments.map((app, index) => {
-            const catInfo = getStatusCategory(app.status);
-            const prevCatKey = index > 0 ? getStatusCategory(sortedAppointments[index - 1].status).key : null;
-            const isCategoryHeader = filter === 'todos' && catInfo.key !== prevCatKey;
+            sortedAppointments.map((app, index) => {
+              const catInfo = getStatusCategory(app.status);
+              const prevCatKey = index > 0 ? getStatusCategory(sortedAppointments[index - 1].status).key : null;
+              const isCategoryHeader = filter === 'todos' && catInfo.key !== prevCatKey;
 
-            const clientDisplayName = app.customerName || app.clientName || 'Cliente';
-            const serviceDisplayName = app.service || app.serviceTitle || 'Serviço';
-            const appointmentTime = app.time || (app.dateTime ? app.dateTime.split('às')[1] : '09:00') || '09:00';
+              const isCollapsed = !!collapsedCategories[catInfo.key];
 
-            return (
-              <React.Fragment key={app.protocolCode || app.id || index}>
-                {/* Banner divisor de categoria no modo 'todos' */}
-                {isCategoryHeader && (
-                  <div className={`mt-2.5 mb-1 px-2.5 py-1 rounded-[4px] border flex items-center justify-between ${
-                    isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-slate-100 border-slate-200'
-                  }`}>
-                    <div className="flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${catInfo.dotColor}`} />
-                      <span className={`text-[10px] font-extrabold uppercase tracking-wider ${catInfo.badgeText}`}>
-                        {catInfo.label}
+              const clientDisplayName = app.customerName || app.clientName || 'Cliente';
+              const serviceDisplayName = app.service || app.serviceTitle || 'Serviço';
+              const appointmentTime = app.time || (app.dateTime ? app.dateTime.split('às')[1] : '09:00') || '09:00';
+
+              return (
+                <React.Fragment key={app.protocolCode || app.id || index}>
+                  {/* Banner divisor de categoria no modo 'todos' — agora um botão interativo expansível */}
+                  {isCategoryHeader && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleCategory(catInfo.key);
+                      }}
+                      className={`w-full text-left mt-2.5 mb-1 px-2.5 py-1.5 rounded-[4px] border flex items-center justify-between transition cursor-pointer select-none active:scale-99 ${
+                        isDark 
+                          ? 'bg-slate-900/80 border-slate-800 text-slate-200 hover:bg-slate-900/95 hover:border-slate-700' 
+                          : 'bg-slate-100 border-slate-200 text-slate-800 hover:bg-slate-200/80 hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        {isCollapsed ? (
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        )}
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${catInfo.dotColor}`} />
+                        <span className={`text-[10px] font-extrabold uppercase tracking-wider truncate ${catInfo.badgeText}`}>
+                          {catInfo.label}
+                        </span>
+                      </div>
+                      <span className="text-[9.5px] font-mono font-bold text-slate-400 shrink-0">
+                        {categoryCounts[catInfo.key]} {categoryCounts[catInfo.key] === 1 ? 'item' : 'itens'}
                       </span>
-                    </div>
-                    <span className="text-[9.5px] font-mono font-bold text-slate-400">
-                      {categoryCounts[catInfo.key]} {categoryCounts[catInfo.key] === 1 ? 'item' : 'itens'}
-                    </span>
-                  </div>
-                )}
+                    </button>
+                  )}
 
-                <div
-                  onClick={() => {
-                    hapticLight();
-                    setSelectedAppointment(app);
-                  }}
-                  className={`p-2.5 rounded-[4px] border grid grid-cols-12 gap-2 items-center transition cursor-pointer group ${
-                    isDark 
-                      ? 'bg-slate-900/90 border-slate-800/90 hover:border-emerald-500/60 hover:bg-slate-900' 
-                      : 'bg-white border-slate-200 hover:border-emerald-500/60 hover:bg-slate-50 shadow-2xs'
-                  } ${catInfo.key === 'cancelados' ? 'opacity-60' : ''}`}
-                >
-                  {/* Coluna 1: Horário */}
-                  <div className="col-span-3 shrink-0 flex flex-col items-start justify-center">
-                    <div className={`px-2.5 py-1.5 rounded-[4px] border transition flex items-center justify-center ${
-                      isDark 
-                        ? 'bg-slate-900/90 border-emerald-500/30 group-hover:border-emerald-500/60' 
-                        : 'bg-emerald-50/60 border-emerald-200 group-hover:border-emerald-400'
-                    }`}>
-                      <span className="text-base font-black font-mono tracking-tight text-emerald-400 leading-none">
-                        {appointmentTime.trim()}
-                      </span>
-                    </div>
-                  </div>
+                  {!isCollapsed && (
+                    <div
+                      onClick={() => {
+                        hapticLight();
+                        setSelectedAppointment(app);
+                      }}
+                      className={`p-2.5 rounded-[4px] border grid grid-cols-12 gap-2 items-center transition cursor-pointer group ${
+                        isDark 
+                          ? 'bg-slate-900/90 border-slate-800/90 hover:border-emerald-500/60 hover:bg-slate-900' 
+                          : 'bg-white border-slate-200 hover:border-emerald-500/60 hover:bg-slate-50 shadow-2xs'
+                      } ${catInfo.key === 'cancelados' ? 'opacity-60' : ''}`}
+                    >
+                      {/* Coluna 1: Horário */}
+                      <div className="col-span-3 shrink-0 flex flex-col items-start justify-center">
+                        <div className={`px-2.5 py-1.5 rounded-[4px] border transition flex items-center justify-center ${
+                          isDark 
+                            ? 'bg-slate-900/90 border-emerald-500/30 group-hover:border-emerald-500/60' 
+                            : 'bg-emerald-50/60 border-emerald-200 group-hover:border-emerald-400'
+                        }`}>
+                          <span className="text-base font-black font-mono tracking-tight text-emerald-400 leading-none">
+                            {appointmentTime.trim()}
+                          </span>
+                        </div>
+                      </div>
 
-                  {/* Coluna 2: Cliente */}
-                  <div className="col-span-4 min-w-0 flex items-center">
-                    <h4 className={`text-xs font-bold truncate group-hover:text-emerald-400 transition ${
-                      isDark ? 'text-white' : 'text-slate-900'
-                    }`}>
-                      {clientDisplayName}
-                    </h4>
-                  </div>
+                      {/* Coluna 2: Cliente */}
+                      <div className="col-span-4 min-w-0 flex items-center">
+                        <h4 className={`text-xs font-bold truncate group-hover:text-emerald-400 transition ${
+                          isDark ? 'text-white' : 'text-slate-900'
+                        }`}>
+                          {clientDisplayName}
+                        </h4>
+                      </div>
 
-                  {/* Coluna 3: Serviço & Selo de Status da Demanda */}
-                  <div className="col-span-5 min-w-0 flex items-center justify-end">
-                    <div className="min-w-0 text-right">
-                      <p className={`text-[11px] font-bold truncate ${
-                        isDark ? 'text-slate-200' : 'text-slate-800'
-                      }`}>
-                        {serviceDisplayName}
-                      </p>
-                      <span className={`inline-block px-1.5 py-0.2 rounded-[4px] text-[8px] font-extrabold uppercase tracking-wider border ${catInfo.badgeFullClass}`}>
-                        {catInfo.shortLabel}
-                      </span>
+                      {/* Coluna 3: Serviço & Selo de Status da Demanda */}
+                      <div className="col-span-5 min-w-0 flex items-center justify-end">
+                        <div className="min-w-0 text-right">
+                          <p className={`text-[11px] font-bold truncate ${
+                            isDark ? 'text-slate-200' : 'text-slate-800'
+                          }`}>
+                            {serviceDisplayName}
+                          </p>
+                          <span className={`inline-block px-1.5 py-0.2 rounded-[4px] text-[8px] font-extrabold uppercase tracking-wider border ${catInfo.badgeFullClass}`}>
+                            {catInfo.shortLabel}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </React.Fragment>
-            );
-          })
+                  )}
+                </React.Fragment>
+              );
+            })
         )}
       </div>
 

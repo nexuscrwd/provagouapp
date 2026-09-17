@@ -15,6 +15,58 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Implementação de Divisores de Categoria Colapsáveis na Agenda
+- **Tipo:** `[UI / UX / Feature]`
+- **Motivo / Solicitação:** Converter os divisores de cabeçalho das categorias na lista de agendamentos em botões interativos e clicáveis, que ao serem tocados, recolhem ou expandem todos os agendamentos daquela respectiva categoria.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Inclusão do import do ícone `ChevronDown` de `lucide-react`.
+    - Declaração do estado reativo `collapsedCategories` e do manipulador de toque `toggleCategory`.
+    - Conversão do cabeçalho de categoria (`isCategoryHeader`) em um elemento `<button>` interativo de largura total com transições suaves e retorno tátil.
+    - Renderização condicional de exibição dos cartões de agendamento baseada no estado de recolhimento (`!isCollapsed`).
+- **Resultado:**
+  - Experiência do usuário (UX) extremamente aprimorada, permitindo ao profissional contrair seções concluídas, canceladas ou futuras para manter o foco apenas no que é de fato relevante no momento, acompanhado por indicadores visuais de seta dinâmicos (`ChevronDown` / `ChevronRight`).
+
+### [2026-09-17] — Remoção Completa do Bloco de Filtros da Visualização da Agenda
+- **Tipo:** `[UI / UX / Cleanup]`
+- **Motivo / Solicitação:** Remover a div de filtros duplos (Período e Status) do topo na visualização da Agenda do Profissional, conforme o seletor CSS exato apontado pelo usuário, para eliminar redundâncias e simplificar a interface.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`: Exclusão completa da div correspondente ao container de filtros duplos (`div:nth-of-type(2)`), integrando o cabeçalho de título e controle de datas diretamente com o feed de horários agendados.
+- **Resultado:**
+  - Layout da Agenda otimizado e ultra-limpo, focando diretamente nas informações essenciais de horários e clientes, com maior área útil na tela do dispositivo mobile.
+
+### [2026-09-17] — Ampliação do Tamanho das Métricas Numéricas nos Mini-Cards Quadrados
+- **Tipo:** `[UI / UX / Typography]`
+- **Motivo / Solicitação:** Aumentar o tamanho do número de contagem nos mini-cards de filtro, que estava pequeno diante do espaço vertical livre resultante do formato perfeitamente quadrado.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Substituída a classe de fonte `text-xs` por `text-xl font-black` nos indicadores numéricos de ambas as fileiras de filtros.
+- **Resultado:**
+  - Leitura extremamente facilitada, com as métricas numéricas agora em destaque destacado (`text-xl font-black`), gerando um excelente equilíbrio estético com o formato quadrado dos botões de filtro.
+
+### [2026-09-17] — Ajuste dos Mini-Cards de Filtro para Formato Quadrado Perfeito
+- **Tipo:** `[UI / UX / Styling]`
+- **Motivo / Solicitação:** Deixar as duas linhas de mini-cards de filtro (Período e Status) do Dashboard com formato perfeitamente quadrado.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Inclusão da classe utilitária do Tailwind `aspect-square w-full` nos botões geradores das duas fileiras de filtros.
+- **Resultado:**
+  - Mini-cards agora possuem proporção matemática perfeitamente quadrada (1:1), mantendo a harmonia visual em qualquer tamanho de tela mobile e reforçando a consistência de design do Vagou.
+
+### [2026-09-17] — Restauração Completa das Duas Linhas de Filtros do Dashboard
+- **Tipo:** `[UI / UX / Fix / Rollback]`
+- **Motivo / Solicitação:** Reversão total de qualquer remoção de elementos visuais do topo, restabelecendo com total precisão as duas linhas originais de mini-cards clicáveis (`Período` e `Status`) no início do painel do profissional.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Restaurados os imports de `lucide-react`, a computação `categoryCounts`, as variáveis de filtro reativas e os componentes visuais completos que montam os mini-cards de filtragem.
+- **Resultado:**
+  - O painel operacional do profissional foi completamente reconstituído e está idêntico ao estado de excelência desejado, com todas as opções de filtragem (`Próximo`, `Hoje`, `Semana`, `Mês`) e status (`Confirmado`, `Pendentes`, `Concluído`, `Cancelados`) de volta e 100% funcionais.
+
+### [2026-09-17] — Remoção da Segunda Linha de Filtros (Status) no Dashboard
+- **Tipo:** `[UI / UX / Cleanup]`
+- **Motivo / Solicitação:** Remover a segunda linha de filtros (Status) solicitada, pois esta se tornará redundante com a próxima alteração planejada.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Exclusão completa da div correspondente à grade dos filtros de status (`Confirmado`, `Pendentes`, `Concluído` e `Cancelados`), mantendo apenas os filtros de período e a lista direta de atendimentos.
+- **Resultado:**
+  - Layout simplificado temporariamente preparando o terreno para a próxima solicitação e removendo redundâncias visuais.
+
 ### [2026-09-17] — Seleção Inicial "Próximo" e Reordenação do Menu Rodapé (BottomNav)
 - **Tipo:** `[UI / UX]`
 - **Motivo / Solicitação:** Ajustar a seleção inicial do filtro de tempo para "Próximo" por padrão e reordenar as abas do menu de navegação inferior (rodapé) para a sequência exata: `Início`, `Agenda`, `Serviços` e `Espaço`.

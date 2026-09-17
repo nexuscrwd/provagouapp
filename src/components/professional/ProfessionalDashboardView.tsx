@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
-  Calendar, Store, Clock, LogOut,
-  CalendarDays, CalendarRange
+  Store, Clock, LogOut,
+  Calendar, CalendarDays, CalendarRange
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { SalonAdminSettings, CatalogServiceItem, BookingAppointment } from '../../types';
@@ -31,19 +31,6 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
   salonName = 'Barbearia Rota 99',
 }) => {
   const { isDark } = useTheme();
-
-  const todayAppointments = appointments.filter((a) => {
-    const dt = (a.dateTime || a.dayGroup || '').toLowerCase();
-    return dt.includes('hoje') || dt.includes(new Date().getDate().toString());
-  });
-
-  const confirmedCount = appointments.filter((a) => 
-    (a.status || '').toUpperCase() === 'CONFIRMADO' || (a.status || '').toUpperCase() === 'AGENDADO'
-  ).length;
-
-  const totalRevenue = appointments
-    .filter((a) => (a.status || '').toUpperCase() !== 'CANCELADO')
-    .reduce((acc, curr) => acc + (Number(curr.totalPrice) || 0), 0);
 
   const isOpen = adminSettings?.isOpenNow ?? true;
 
@@ -260,7 +247,7 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
       </div>
 
       {/* 2. Métricas Rápidas em Grid - Filtros Interativos em Duas Linhas */}
-      <div className="p-3.5 space-y-2.5 flex-1 min-h-0">
+      <div className="p-3.5 space-y-2.5 flex-1 min-h-0 overflow-y-auto">
         {/* Primeira Linha: Período (Próximo, Hoje, Semana, Mês) */}
         <div className="grid grid-cols-4 gap-1.5">
           {(
@@ -319,7 +306,7 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
                   hapticLight();
                   setTimeFilter(tTab.id);
                 }}
-                className={`p-2 rounded-lg border flex flex-col justify-between items-start text-left transition cursor-pointer active:scale-97 select-none ${
+                className={`p-2 rounded-lg border flex flex-col justify-between items-start text-left transition cursor-pointer active:scale-97 select-none aspect-square w-full ${
                   isActive
                     ? 'bg-emerald-500 border-emerald-500 text-white font-bold shadow-xs'
                     : isDark
@@ -333,7 +320,7 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
                   </span>
                   <IconComp className={`w-2.5 h-2.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
                 </div>
-                <p className={`text-xs font-black leading-none ${isActive ? 'text-white' : isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                <p className={`text-xl font-black leading-none ${isActive ? 'text-white' : isDark ? 'text-slate-100' : 'text-slate-900'}`}>
                   {count}
                 </p>
               </button>
@@ -372,7 +359,7 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
                   hapticLight();
                   setStatusFilter(sTab.id);
                 }}
-                className={`p-2 rounded-lg border flex flex-col justify-between items-start text-left transition cursor-pointer active:scale-97 select-none ${
+                className={`p-2 rounded-lg border flex flex-col justify-between items-start text-left transition cursor-pointer active:scale-97 select-none aspect-square w-full ${
                   isActive
                     ? activeClass
                     : isDark
@@ -385,10 +372,10 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
                     {sTab.label}
                   </span>
                 </div>
-                <p className={`text-xs font-black leading-none ${
+                <p className={`text-xl font-black leading-none ${
                   isActive
                     ? sTab.id === 'pendentes' ? 'text-slate-950' : 'text-white'
-                    : isDark ? 'text-slate-200' : 'text-slate-800'
+                    : isDark ? 'text-slate-100' : 'text-slate-900'
                 }`}>
                   {count}
                 </p>
