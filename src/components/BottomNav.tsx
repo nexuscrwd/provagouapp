@@ -1,11 +1,11 @@
 import React from 'react';
-import { Home, Calendar, Sparkles, Store, LayoutDashboard } from 'lucide-react';
+import { Home, Calendar, Sparkles, Store, LayoutDashboard, Users } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { hapticLight } from '../utils/haptics';
 
 export interface SalonNavContext {
-  activeTab: 'home' | 'servicos' | 'vagas' | 'espaco';
-  onSelectTab: (tab: 'home' | 'servicos' | 'vagas' | 'espaco') => void;
+  activeTab: 'home' | 'servicos' | 'vagas' | 'espaco' | 'equipe';
+  onSelectTab: (tab: 'home' | 'servicos' | 'vagas' | 'espaco' | 'equipe') => void;
   ServicesIcon?: React.ComponentType<{ className?: string }>;
   SpaceIcon?: React.ComponentType<{ className?: string }>;
   spaceTabLabel?: string;
@@ -15,8 +15,8 @@ export interface SalonNavContext {
 
 interface BottomNavProps {
   salonContext?: SalonNavContext | null;
-  activeTab?: 'home' | 'servicos' | 'vagas' | 'espaco';
-  onSelectTab?: (tab: 'home' | 'servicos' | 'vagas' | 'espaco') => void;
+  activeTab?: 'home' | 'servicos' | 'vagas' | 'espaco' | 'equipe';
+  onSelectTab?: (tab: 'home' | 'servicos' | 'vagas' | 'espaco' | 'equipe') => void;
   ServicesIcon?: React.ComponentType<{ className?: string }>;
   SpaceIcon?: React.ComponentType<{ className?: string }>;
   spaceTabLabel?: string;
@@ -41,19 +41,27 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const isProfessionalMode = propIsProfessionalMode ?? salonContext?.isProfessionalMode ?? false;
   const ServicesIcon = propServicesIcon || salonContext?.ServicesIcon || Sparkles;
   const SpaceIcon = propSpaceIcon || salonContext?.SpaceIcon || Store;
-  const spaceTabLabel = propSpaceTabLabel || salonContext?.spaceTabLabel || (isProfessionalMode ? 'Espaço' : 'Espaço');
+  const spaceTabLabel = propSpaceTabLabel || salonContext?.spaceTabLabel || (isProfessionalMode ? 'Config' : 'Espaço');
   const vagasTabLabel = propVagasTabLabel || salonContext?.vagasTabLabel || (isProfessionalMode ? 'Agenda' : 'Agendar');
 
   if (!onSelectTab) {
     return null;
   }
 
-  const establishmentTabs = [
-    { id: 'home' as const, label: 'Início', icon: isProfessionalMode ? LayoutDashboard : Home },
-    { id: 'vagas' as const, label: vagasTabLabel, icon: Calendar },
-    { id: 'servicos' as const, label: 'Serviços', icon: ServicesIcon },
-    { id: 'espaco' as const, label: spaceTabLabel, icon: SpaceIcon },
+  const establishmentTabs: Array<{
+    id: 'home' | 'vagas' | 'servicos' | 'espaco' | 'equipe';
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }> = [
+    { id: 'home', label: 'Início', icon: isProfessionalMode ? LayoutDashboard : Home },
+    { id: 'vagas', label: vagasTabLabel, icon: Calendar },
+    { id: 'servicos', label: 'Serviços', icon: ServicesIcon },
+    { id: 'espaco', label: spaceTabLabel, icon: SpaceIcon },
   ];
+
+  if (isProfessionalMode) {
+    establishmentTabs.splice(3, 0, { id: 'equipe', label: 'Equipe', icon: Users });
+  }
 
   return (
     <nav className={`flex-shrink-0 w-full h-[70px] ${

@@ -6,7 +6,7 @@ import {
   Check, MessageCircle, MessageSquare,
   Scissors, Hand, Smile, Eye, Sparkles, LayoutDashboard,
   Store, Car, MapPin, Clock, Users, Wifi, Coffee, Wind,
-  KeyRound, LogOut, ShieldCheck, Video, Images, EyeOff
+  KeyRound, LogOut, ShieldCheck, EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ServiceOffer, BookingAppointment, SalonAdminSettings } from '../types';
@@ -15,6 +15,7 @@ import { ProfessionalDashboardView } from './professional/ProfessionalDashboardV
 import { ProfessionalServicesManager } from './professional/ProfessionalServicesManager';
 import { ProfessionalAgendaView } from './professional/ProfessionalAgendaView';
 import { ProfessionalSpaceManager } from './professional/ProfessionalSpaceManager';
+import { TeamManager } from './professional/TeamManager';
 import { ProfessionalLoginModal } from './professional/ProfessionalLoginModal';
 import { useTheme } from '../context/ThemeContext';
 import { getSalonLogo } from '../utils/salonLogos';
@@ -1156,6 +1157,12 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
               />
             </div>
           )}
+
+          {activeTab === 'equipe' && (
+            <div className="w-full h-full flex-1 min-h-0 overflow-hidden flex flex-col justify-start animate-in fade-in duration-150">
+              <TeamManager />
+            </div>
+          )}
         </main>
       ) : (
         /* MODO PÚBLICO / CLIENTE: LANDING PAGE INTEGRADA COM SCROLL SNAP NATIVO */
@@ -1318,25 +1325,12 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
                           {/* Gradiente Cinematográfico Escuro para Máximo Contraste */}
                           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/45 to-black/25 group-hover:via-slate-950/65 transition-colors duration-300 pointer-events-none" />
 
-                          {/* Topo do Card: Badge de Categoria com Frosted Glass & Ponto Esmeralda + Badge Vídeo 5s / Slide */}
+                          {/* Topo do Card: Badge de Categoria com Frosted Glass & Ponto Esmeralda */}
                           <div className="absolute top-2 left-2 right-2 z-10 pointer-events-none flex items-center justify-between gap-1">
                             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-950/80 backdrop-blur-md border border-emerald-500/30 text-emerald-400 text-[9px] font-black uppercase tracking-wider shadow-sm">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
                               {srv.category}
                             </span>
-
-                            {/* Badge de Mídia: Vídeo 5s ou Slide de Fotos */}
-                            {(srv.displayMode === 'video' || srv.mediaType === 'video' || srv.videoUrl) ? (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-emerald-500/40 text-emerald-400 text-[8px] font-black uppercase tracking-wider shadow-sm">
-                                <Video className="w-2.5 h-2.5 text-emerald-400" />
-                                <span>5s</span>
-                              </span>
-                            ) : (srv.displayMode === 'slideshow' && srv.photos && srv.photos.length > 1) ? (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-emerald-500/40 text-emerald-400 text-[8px] font-black uppercase tracking-wider shadow-sm">
-                                <Images className="w-2.5 h-2.5 text-emerald-400" />
-                                <span>Slide</span>
-                              </span>
-                            ) : null}
                           </div>
 
                           {/* Base do Card: Título + Preço */}

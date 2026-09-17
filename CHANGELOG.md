@@ -15,6 +15,28 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — RBAC & Gestão Multi-Tenant de Profissionais (Equipe)
+- **Tipo:** `[Feat / UI / Architecture]`
+- **Motivo / Solicitação:** Iniciar o modelo de RBAC (Role-Based Access Control) multi-tenant, permitindo que a barbearia/salão convide múltiplos profissionais (com papéis de Admin, Profissional Padrão ou Recepcionista) sem misturar agendas ou faturamentos. O Firebase foi removido do projeto em prol da futura adoção do Supabase, rodando o fluxo inicialmente com estado local.
+- **Arquivos Impactados:**
+  - `src/types.ts`: Adicionado suporte a RBAC (`ProfessionalRole`) e dados de `ProfessionalTeamMember`. Adicionado `professionalId` aos serviços.
+  - `src/components/professional/TeamManager.tsx`: Criado componente rico de gestão de equipe para adicionar/editar profissionais e papéis.
+  - `src/components/BottomNav.tsx`: Nova aba "Equipe" injetada apenas no `isProfessionalMode`.
+  - `src/components/SalonProfileView.tsx`: Redirecionamento da nova aba 'equipe' para renderizar o `TeamManager`.
+  - `src/components/professional/ProfessionalSpaceManager.tsx`: Removida antiga seção simplificada de profissionais, dando lugar à solução robusta.
+  - `package.json` / `.json`: Removidos arquivos dependentes do Firebase.
+- **Resultado:**
+  - O aplicativo conta com arquitetura de papéis (Roles). O painel gerencial agora tem uma nova aba inferior "Equipe", abrindo um gerenciador dedicado que permite aos donos cadastrarem novos colaboradores com níveis de acesso definidos. Interface seguindo fielmente as regras Anti-Slop de layout flat e tipografias de alto contraste.
+
+### [2026-09-17] — Remoção de Badges de Mídia na Vitrine de Serviços
+- **Tipo:** `[UI / Clean Code]`
+- **Motivo / Solicitação:** Remover os selos informativos de mídia ("Vídeo 5s", "Slide", "Foto") do canto superior direito dos anúncios na vitrine pública, pois a informação é irrelevante para o usuário final.
+- **Arquivos Impactados:**
+  - `src/components/SalonProfileView.tsx`
+  - `src/components/professional/ServicePublicAdPreview.tsx`
+- **Resultado:**
+  - Interface do catálogo mais limpa e focada no serviço. Imports não utilizados (`Video`, `Images`) foram limpos seguindo o protocolo de Clean Code.
+
 ### [2026-09-17] — Botão "+ Novo", Escolha de Criação & Solução Completa de Exclusão de Categorias e Serviços
 - **Tipo:** `[Feat / UI / UX / Flow]`
 - **Motivo / Solicitação:** Reduzir o tamanho do botão primário de novo serviço, renomeá-lo para "+ Novo" e, ao ser clicado, abrir um modal para escolher entre criar "Serviço" ou "Categoria". Além disso, implementar uma solução de exclusão robusta de serviços e de categorias.

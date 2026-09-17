@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Video, Images, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export interface ServicePublicAdPreviewProps {
   title: string;
@@ -123,37 +123,13 @@ export const ServicePublicAdPreview: React.FC<ServicePublicAdPreviewProps> = ({
       {/* 2. Gradiente Cinematográfico Escuro para Contraste Superior */}
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/45 to-black/30 pointer-events-none" />
 
-      {/* 3. Topo do Card: Badge de Categoria + Badge de Mídia */}
+      {/* 3. Topo do Card: Badge de Categoria */}
       <div className="absolute top-2 left-2 right-2 z-10 pointer-events-none flex items-center justify-between gap-1">
         {/* Badge Categoria com Ponto Esmeralda */}
         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-emerald-500/40 text-emerald-400 text-[9px] font-black uppercase tracking-wider shadow-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
           <span className="truncate max-w-[90px]">{category || 'Geral'}</span>
         </span>
-
-        {/* Badge do Tipo de Mídia (5s, Slide, Foto ou Sem Mídia) */}
-        {isMediaPresent ? (
-          displayMode === 'video' ? (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-emerald-500/40 text-emerald-400 text-[8px] font-black uppercase tracking-wider shadow-sm">
-              <Video className="w-2.5 h-2.5 text-emerald-400" />
-              <span>5s</span>
-            </span>
-          ) : displayMode === 'slideshow' ? (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-emerald-500/40 text-emerald-400 text-[8px] font-black uppercase tracking-wider shadow-sm">
-              <Images className="w-2.5 h-2.5 text-emerald-400" />
-              <span>Slide ({effectivePhotos.length})</span>
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/70 text-slate-300 text-[8px] font-black uppercase tracking-wider shadow-sm">
-              <ImageIcon className="w-2.5 h-2.5 text-emerald-400" />
-              <span>Foto</span>
-            </span>
-          )
-        ) : (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-amber-500/40 text-amber-300 text-[8px] font-black uppercase tracking-wider shadow-sm">
-            <span>Prévia</span>
-          </span>
-        )}
       </div>
 
       {/* 4. Base do Card: Título, Preço e Duração */}

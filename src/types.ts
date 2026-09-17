@@ -113,6 +113,20 @@ export interface CatalogServiceItem {
   videoDurationSeconds?: number;
   displayMode?: 'static' | 'slideshow' | 'video';
   aspectRatio?: string;
+  professionalId?: string; // Multi-tenant RBAC: vincula o serviço a um profissional específico
+}
+
+export type ProfessionalRole = 'admin' | 'professional' | 'receptionist';
+
+export interface ProfessionalTeamMember {
+  id: string;
+  name: string;
+  role: ProfessionalRole;
+  avatarUrl?: string;
+  phone?: string;
+  specialties: string[];
+  isActive: boolean;
+  joinedAt: string;
 }
 
 // Utilitários de feedback tátil e fallbacks determinísticos

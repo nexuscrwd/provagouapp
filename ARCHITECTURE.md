@@ -14,7 +14,7 @@ O **Vagou** é um aplicativo mobile-first de agendamento de vagas imediatas e ho
 | **Animações** | Motion (`motion/react`) | Transições de tela, gavetas, modais e feedback de toque. |
 | **Build & Dev Server** | Vite 6 + Express + TSX | Servidor Full-Stack com suporte a rotas API e SPA. |
 | **IA Generativa** | `@google/genai` (Gemini SDK) | Análise arquitetural e extração estruturada de telas. |
-| **Persistência / Cloud** | Firebase Firestore (Configurado) | Base de dados em tempo real para sincronização de vagas. |
+| **Persistência / Cloud** | Supabase (Definido) | Banco de dados relacional (PostgreSQL) para multi-tenancy e gerenciamento de permissões (RBAC). (Atualmente mockado em memória/localStorage enquanto não conectado). |
 
 ---
 
