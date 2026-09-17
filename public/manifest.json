@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Vagou - Vagas Imediatas de Beleza e Barbearia",
-  "short_name": "Vagou",
+  "name": "Meu Negócio - Vagas Imediatas de Beleza e Barbearia",
+  "short_name": "Meu Negócio",
   "description": "Aplicativo de agendamento de vagas e horários imediatos em salões de beleza, barbearias e estética.",
   "start_url": "/?source=pwa",
   "scope": "/",

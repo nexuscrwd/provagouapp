@@ -15,6 +15,68 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Botão "+ Novo", Escolha de Criação & Solução Completa de Exclusão de Categorias e Serviços
+- **Tipo:** `[Feat / UI / UX / Flow]`
+- **Motivo / Solicitação:** Reduzir o tamanho do botão primário de novo serviço, renomeá-lo para "+ Novo" e, ao ser clicado, abrir um modal para escolher entre criar "Serviço" ou "Categoria". Além disso, implementar uma solução de exclusão robusta de serviços e de categorias.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Renomeado e reduzido o botão primário do cabeçalho para "+ Novo" (`px-2.5 py-1.5 text-[10.5px]`).
+    - Adicionado modal de escolha de criação (`isChooseCreateModalOpen`) oferecendo as opções "Novo Serviço" e "Nova Categoria".
+    - Adicionado modal de criação de categoria simples e minimalista (`isNewCategoryModalOpen`) que adiciona à lista e persiste no LocalStorage de forma segura.
+    - Adicionado botão de exclusão rápida de serviço diretamente no card do serviço na listagem principal (ícone de lixeira no canto direito).
+    - Adicionado botão de exclusão de categoria no cabeçalho de cada categoria mestre.
+    - Adicionado modal de confirmação de exclusão de categoria com lógica inteligente: ao excluir a categoria, os serviços associados são preservados e movidos de forma segura para a categoria "Outros".
+- **Resultado:**
+  - O fluxo de gerenciamento ficou extremamente mais intuitivo e ágil, permitindo criar tanto serviços quanto categorias de forma centralizada e realizar exclusões com poucos toques no smartphone sem poluentes de texto desnecessários.
+
+### [2026-09-17] — Aproximação entre Campos de Preço e Duração (Fim do Abismo Intermediário)
+- **Tipo:** `[UI / UX / Alignment / Layout]`
+- **Motivo / Solicitação:** Aproximar os campos "3. Preço" e "4. Duração Estimada", removendo o grande vazio que existia entre os dois devido ao layout de grid de 50%.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Substituído o contêiner de grid (`grid-cols-1 sm:grid-cols-2`) por um contêiner flexível horizontal direto (`flex flex-row items-start gap-8`).
+- **Resultado:**
+  - O campo de Duração Estimada agora fica posicionado imediatamente ao lado do campo de Preço com um espaçamento harmonioso de 32px (`gap-8`), eliminando de vez o espaço ocioso e aproximando as informações perfeitamente conforme o print.
+
+### [2026-09-17] — Alinhamento e Coesão dos Elementos de Duração Estimada
+- **Tipo:** `[UI / UX / Alignment / Tuning]`
+- **Motivo / Solicitação:** Alinhar as informações de entrada de tempo (horas e minutos) com o badge de resumo formatado, eliminando vãos ou distorções visuais no formulário.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Removido o `ml-auto` do badge de resumo formatado e substituído por `ml-2` para mantê-lo agrupado perfeitamente ao lado dos inputs de tempo.
+    - Removida a classe `flex-wrap` do contêiner flex para garantir um alinhamento estrito, retilíneo e horizontal contínuo.
+- **Resultado:**
+  - O fluxo de leitura visual agora é imediato e unificado (`00h : 30min [30 min]`), trazendo um alinhamento perfeito, harmônico e sem espaçamentos excessivos no formulário.
+
+### [2026-09-17] — Redução do Tamanho do Campo de Preço do Serviço (Otimização Final)
+- **Tipo:** `[UI / UX / Refactor / Tuning]`
+- **Motivo / Solicitação:** Encolher ainda mais o box de input de preço para exatamente metade do tamanho anterior, eliminando qualquer espaço ocioso para a digitação do preço.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Reduzida a largura máxima do contêiner `relative` do input `#service-price-input` de `max-w-[140px]` para um limite compacto de `max-w-[90px]`.
+- **Resultado:**
+  - O input de valor agora está perfeitamente sintetizado e focado (largura de 90px), ocupando apenas o espaço matemático estrito do valor monetário e mantendo o design do formulário ultra-polido.
+
+### [2026-09-17] — Ajuste de Responsividade e Correção de Estouro do Span no Modal de Serviços
+- **Tipo:** `[UI / UX / Fix / Responsividade]`
+- **Motivo / Solicitação:** Corrigir comportamento de quebra ou estouro lateral do badge de duração formatada (span de resumo da duração) no smartphone dentro do modal de Novo/Editar Serviço.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Atualizado o contêiner de Preço e Duração de `grid-cols-2` fixo para `grid-cols-1 sm:grid-cols-2` para empilhar verticalmente em celulares e expandir apenas em telas maiores.
+    - Adicionado suporte a quebra inteligente de linha (`flex-wrap`) no contêiner da Duração.
+    - Adicionada a classe `whitespace-nowrap` no badge de resumo formatado (span) para prevenir qualquer hifenização ou quebra inadequada do texto do tempo.
+- **Resultado:**
+  - Layout do formulário 100% responsivo e blindado contra estouros em smartphones (mesmo em viewports estreitas de 320px como iPhone SE), preservando o visual impecável do design system do Vagou.
+
+### [2026-09-17] — Customização do Nome de Instalação do PWA (Meu Negócio)
+- **Tipo:** `[PWA / Branding]`
+- **Motivo / Solicitação:** Evitar conflitos com outro app "Vagou" (referente ao portal geral) instalado no dispositivo móvel do usuário, renomeando o ícone de instalação para um nome diferenciado como "Meu Negócio".
+- **Arquivos Impactados:**
+  - `public/manifest.json`: Atualizado o `name` para `"Meu Negócio - Vagas Imediatas de Beleza e Barbearia"` e o `short_name` para `"Meu Negócio"`.
+  - `index.html`: Alterada a meta tag `<meta name="apple-mobile-web-app-title" content="Meu Negócio" />` para suportar dispositivos iOS (Apple Safari).
+- **Resultado:**
+  - O aplicativo agora se instala no celular com o nome alternativo e personalizado **"Meu Negócio"**, garantindo distinção completa contra o aplicativo do portal de clientes.
+
 ### [2026-09-17] — Configuração do Estado Inicial das Categorias na Agenda
 - **Tipo:** `[UI / UX / Usability]`
 - **Motivo / Solicitação:** Definir que as categorias de agendamento "Confirmados" e "Pendentes" comecem já expandidas por padrão, enquanto as demais (como "Concluídos" e "Cancelados") iniciem recolhidas/ocultas.

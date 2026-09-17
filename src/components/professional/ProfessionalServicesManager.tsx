@@ -3,7 +3,7 @@ import {
   Plus, Edit2, Trash2, Scissors, Check, X, 
   Sparkles, Clock, Image as ImageIcon,
   AlertCircle, Video, Upload, Film, FolderPlus,
-  Images, Play, Camera, Eye
+  Images, Play, Camera, Eye, Tag
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { hapticLight, hapticSuccess, hapticMedium } from '../../utils/haptics';
@@ -309,11 +309,53 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
   const deviceVideoInputRef = useRef<HTMLInputElement | null>(null);
   
   const [deleteConfirmService, setDeleteConfirmService] = useState<CatalogServiceItem | null>(null);
+  const [deleteConfirmCategory, setDeleteConfirmCategory] = useState<string | null>(null);
+  const [isChooseCreateModalOpen, setIsChooseCreateModalOpen] = useState<boolean>(false);
+  const [isNewCategoryModalOpen, setIsNewCategoryModalOpen] = useState<boolean>(false);
+  const [newCategoryModalName, setNewCategoryModalName] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 2800);
+  };
+
+  const handleDeleteCategory = (catName: string) => {
+    hapticMedium();
+    const updatedCats = categoryList.filter((c) => c.toLowerCase() !== catName.toLowerCase());
+    persistCategories(updatedCats);
+
+    const updatedServices = services.map((s) => {
+      if (s.category?.toLowerCase() === catName.toLowerCase()) {
+        return { ...s, category: 'Outros' };
+      }
+      return s;
+    });
+    onUpdateServices(updatedServices);
+
+    if (selectedCategory.toLowerCase() === catName.toLowerCase()) {
+      setSelectedCategory('Todos');
+    }
+
+    setDeleteConfirmCategory(null);
+    showToast(`Categoria "${catName}" excluída.`);
+  };
+
+  const handleCreateCategoryFromModal = () => {
+    const target = newCategoryModalName.trim();
+    if (!target) return;
+
+    if (categoryList.some((c) => c.toLowerCase() === target.toLowerCase())) {
+      showToast(`Categoria "${target}" já existe!`);
+      return;
+    }
+
+    const updated = [...categoryList, target];
+    persistCategories(updated);
+    setNewCategoryModalName('');
+    setIsNewCategoryModalOpen(false);
+    hapticSuccess();
+    showToast(`Categoria "${target}" criada com sucesso!`);
   };
 
   // Salvar categorias no LocalStorage
@@ -722,14 +764,17 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
             </p>
           </div>
 
-          {/* Botão ÚNICO Primário de Ação: Novo Serviço */}
+          {/* Botão ÚNICO Primário de Ação: Novo */}
           <button
             type="button"
-            onClick={() => handleOpenNew(selectedCategory)}
-            className="px-3.5 py-2 rounded bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider transition shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+            onClick={() => {
+              hapticLight();
+              setIsChooseCreateModalOpen(true);
+            }}
+            className="px-2.5 py-1.5 rounded bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10.5px] uppercase tracking-wider transition shadow-sm flex items-center gap-1 cursor-pointer active:scale-95"
           >
-            <Plus className="w-4 h-4 text-white stroke-[2.5]" />
-            <span>Novo Serviço</span>
+            <Plus className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+            <span>Novo</span>
           </button>
         </div>
 
@@ -806,6 +851,22 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
                     {catServices.length} {catServices.length === 1 ? 'serviço' : 'serviços'}
                   </span>
                 </div>
+
+                {/* Botão de Excluir Categoria (apenas para categorias cadastradas na lista e que não sejam o Fallback "Outros") */}
+                {categoryList.includes(categoryName) && categoryName.toLowerCase() !== 'outros' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      hapticMedium();
+                      setDeleteConfirmCategory(categoryName);
+                    }}
+                    className="px-2 py-1 rounded hover:bg-rose-500/10 text-rose-400 border border-transparent hover:border-rose-500/20 transition cursor-pointer flex items-center gap-1 active:scale-95"
+                    title={`Excluir categoria ${categoryName}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span className="text-[9.5px] font-bold uppercase tracking-wide">Excluir</span>
+                  </button>
+                )}
               </div>
 
               {/* Grid de Serviços */}
@@ -928,6 +989,20 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
                           </span>
                         </div>
                       </div>
+
+                      {/* Botão de Exclusão Rápida do Serviço */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          hapticMedium();
+                          setDeleteConfirmService(srv);
+                        }}
+                        className="p-2 rounded hover:bg-rose-500/10 text-rose-400 border border-transparent hover:border-rose-500/20 transition cursor-pointer active:scale-95 shrink-0"
+                        title="Excluir este serviço"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   );
                 })}
@@ -1066,12 +1141,12 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
               </div>
 
               {/* 3. PREÇO E DURAÇÃO */}
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="flex flex-row items-start gap-8">
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                     3. Preço (R$) *
                   </label>
-                  <div className="relative">
+                  <div className="relative max-w-[90px]">
                     <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-400">
                       R$
                     </span>
@@ -1170,7 +1245,7 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
                     </div>
 
                     {/* Badge de Resumo Formatado */}
-                    <span className={`text-[10.5px] font-bold shrink-0 ml-auto px-1.5 py-0.5 rounded border ${
+                    <span className={`text-[10.5px] font-bold shrink-0 ml-2 px-1.5 py-0.5 rounded border whitespace-nowrap ${
                       isDark ? 'bg-slate-900/60 border-slate-800 text-emerald-400' : 'bg-slate-100 border-slate-200 text-emerald-600'
                     }`}>
                       {formatHoursMinutesToDuration(formHours, formMinutes)}
@@ -2065,6 +2140,222 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
               >
                 <Trash2 className="w-3.5 h-3.5 text-white" />
                 <span>Excluir Serviço</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: ESCOLHA DE CRIAÇÃO ("+ Novo") */}
+      {/* ============================================================ */}
+      {isChooseCreateModalOpen && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setIsChooseCreateModalOpen(false)}
+        >
+          <div 
+            className={`w-full max-w-xs rounded-xl overflow-hidden shadow-2xl border p-4.5 space-y-4 ${
+              isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b pb-2 border-slate-800/60">
+              <h3 className="text-xs font-black uppercase tracking-wider font-['Poppins'] text-emerald-400">
+                O que deseja criar?
+              </h3>
+              <button 
+                type="button" 
+                onClick={() => setIsChooseCreateModalOpen(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  hapticLight();
+                  setIsChooseCreateModalOpen(false);
+                  handleOpenNew(selectedCategory);
+                }}
+                className={`p-3 rounded-lg border text-left flex items-center gap-3 transition cursor-pointer active:scale-[0.98] ${
+                  isDark 
+                    ? 'bg-slate-900 border-slate-800 hover:border-emerald-500/50 text-white' 
+                    : 'bg-slate-50 border-slate-200 hover:border-emerald-500 text-slate-900'
+                }`}
+              >
+                <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
+                  <Scissors className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wide">Novo Serviço</p>
+                  <p className="text-[10px] text-slate-400">Para a vitrine do seu salão</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  hapticLight();
+                  setIsChooseCreateModalOpen(false);
+                  setIsNewCategoryModalOpen(true);
+                }}
+                className={`p-3 rounded-lg border text-left flex items-center gap-3 transition cursor-pointer active:scale-[0.98] ${
+                  isDark 
+                    ? 'bg-slate-900 border-slate-800 hover:border-emerald-500/50 text-white' 
+                    : 'bg-slate-50 border-slate-200 hover:border-emerald-500 text-slate-900'
+                }`}
+              >
+                <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
+                  <Tag className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-wide">Nova Categoria</p>
+                  <p className="text-[10px] text-slate-400">Para organizar seus serviços</p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: CRIAR CATEGORIA */}
+      {/* ============================================================ */}
+      {isNewCategoryModalOpen && (
+        <div 
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-xs animate-in fade-in"
+          onClick={() => {
+            setIsNewCategoryModalOpen(false);
+            setNewCategoryModalName('');
+          }}
+        >
+          <div 
+            className={`w-full max-w-xs rounded-xl overflow-hidden shadow-2xl border p-4.5 space-y-4 ${
+              isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b pb-2 border-slate-800/60">
+              <h3 className="text-xs font-black uppercase tracking-wider font-['Poppins'] text-emerald-400">
+                Nova Categoria
+              </h3>
+              <button 
+                type="button" 
+                onClick={() => {
+                  setIsNewCategoryModalOpen(false);
+                  setNewCategoryModalName('');
+                }}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                Nome da Categoria
+              </label>
+              <input
+                type="text"
+                value={newCategoryModalName}
+                onChange={(e) => setNewCategoryModalName(e.target.value)}
+                placeholder="Ex: Barba, Depilação, Unhas..."
+                autoFocus
+                className={`w-full px-3 py-2 rounded text-xs border ${
+                  isDark 
+                    ? 'bg-slate-900 border-slate-800 text-white placeholder-slate-500 focus:border-emerald-500' 
+                    : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-emerald-500'
+                } outline-hidden`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleCreateCategoryFromModal();
+                  }
+                }}
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800/60">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsNewCategoryModalOpen(false);
+                  setNewCategoryModalName('');
+                }}
+                className={`px-3.5 py-2 rounded text-xs font-bold transition cursor-pointer border ${
+                  isDark 
+                    ? 'border-slate-800 text-slate-300 hover:bg-slate-900' 
+                    : 'border-slate-200 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateCategoryFromModal}
+                disabled={!newCategoryModalName.trim()}
+                className="px-4 py-2 rounded bg-[#20C933] hover:bg-[#1bb32d] disabled:opacity-50 text-white text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1 active:scale-98"
+              >
+                <Check className="w-3.5 h-3.5 text-white" />
+                <span>Salvar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: CONFIRMAÇÃO DE EXCLUSÃO DE CATEGORIA */}
+      {/* ============================================================ */}
+      {deleteConfirmCategory && (
+        <div 
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/85 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setDeleteConfirmCategory(null)}
+        >
+          <div 
+            className={`w-full max-w-sm rounded-xl overflow-hidden shadow-2xl border p-4.5 space-y-4 ${
+              isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-500 shrink-0">
+                <Trash2 className="w-5 h-5 text-rose-500" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-bold font-['Poppins']">
+                  Excluir Categoria?
+                </h3>
+                <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-600'} leading-relaxed`}>
+                  Tem certeza que deseja excluir a categoria <strong className={isDark ? 'text-white' : 'text-slate-900'}>"{deleteConfirmCategory}"</strong>? 
+                  <br />
+                  <span className="text-emerald-400 font-semibold">Nota:</span> Seus serviços associados não serão excluídos, eles serão movidos de forma segura para a categoria <strong className={isDark ? 'text-white' : 'text-slate-900'}>"Outros"</strong>.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800/60">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmCategory(null)}
+                className={`px-3.5 py-2 rounded text-xs font-bold transition cursor-pointer border ${
+                  isDark 
+                    ? 'border-slate-800 text-slate-300 hover:bg-slate-900' 
+                    : 'border-slate-200 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteCategory(deleteConfirmCategory)}
+                className="px-4 py-2 rounded bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5 active:scale-98"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-white" />
+                <span>Excluir Categoria</span>
               </button>
             </div>
           </div>
