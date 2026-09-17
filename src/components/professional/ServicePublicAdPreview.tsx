@@ -1,37 +1,44 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Video, Images, Image as ImageIcon } from 'lucide-react';
+import { Video, Images, Image as ImageIcon, Sparkles } from 'lucide-react';
 
 export interface ServicePublicAdPreviewProps {
   title: string;
   category: string;
   price: number | string;
   duration?: string;
-  displayMode: 'static' | 'slideshow' | 'video';
+  displayMode?: 'static' | 'slideshow' | 'video';
   image?: string;
   photos?: string[];
   videoUrl?: string;
   className?: string;
+  hasCustomMedia?: boolean;
 }
 
 /**
  * Componente de Pré-visualização em Alta Fidelidade do Anúncio
  * Reproduz com 100% de precisão o card de serviço exibido na seção pública do app e no Portal VagouApp.
+ * Suporta modo preview quando ainda não possui mídia personalizada cadastrada.
  */
 export const ServicePublicAdPreview: React.FC<ServicePublicAdPreviewProps> = ({
   title,
   category,
   price,
   duration,
-  displayMode,
+  displayMode = 'static',
   image,
   photos = [],
   videoUrl,
   className = '',
+  hasCustomMedia,
 }) => {
+  const isMediaPresent = hasCustomMedia !== undefined 
+    ? hasCustomMedia 
+    : Boolean((photos && photos.length > 0) || image || videoUrl);
+
   const effectivePhotos = useMemo(() => {
     if (photos && photos.length > 0) return photos;
     if (image) return [image];
-    return ['https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=800&q=80'];
+    return [];
   }, [photos, image]);
 
   const [slideIdx, setSlideIdx] = useState(0);
@@ -53,7 +60,7 @@ export const ServicePublicAdPreview: React.FC<ServicePublicAdPreviewProps> = ({
       className={`relative overflow-hidden rounded-lg bg-slate-950 border border-slate-800 shadow-xl select-none ${className}`}
     >
       {/* 1. Mídia de Fundo do Anúncio */}
-      {displayMode === 'video' && videoUrl ? (
+      {isMediaPresent && displayMode === 'video' && videoUrl ? (
         <video
           key={videoUrl}
           src={videoUrl}
@@ -63,7 +70,7 @@ export const ServicePublicAdPreview: React.FC<ServicePublicAdPreviewProps> = ({
           playsInline
           className="w-full h-full object-cover"
         />
-      ) : displayMode === 'slideshow' && effectivePhotos.length > 1 ? (
+      ) : isMediaPresent && displayMode === 'slideshow' && effectivePhotos.length > 1 ? (
         <div className="w-full h-full relative overflow-hidden bg-slate-950">
           {effectivePhotos.map((photo, i) => (
             <img
@@ -91,13 +98,26 @@ export const ServicePublicAdPreview: React.FC<ServicePublicAdPreviewProps> = ({
             ))}
           </div>
         </div>
-      ) : (
+      ) : isMediaPresent && effectivePhotos.length > 0 ? (
         <img
           src={effectivePhotos[0]}
           alt={title || 'Serviço'}
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />
+      ) : (
+        /* Fallback elegante sem mídia: gradiente escuro e ícone temático */
+        <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 flex flex-col items-center justify-center p-4 text-center">
+          <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-2">
+            <Sparkles className="w-5 h-5 text-emerald-400" />
+          </div>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            Sem Mídia Cadastrada
+          </span>
+          <span className="text-[9px] text-slate-500 mt-0.5">
+            Adicione fotos ou vídeo no gerenciador
+          </span>
+        </div>
       )}
 
       {/* 2. Gradiente Cinematográfico Escuro para Contraste Superior */}
@@ -111,21 +131,27 @@ export const ServicePublicAdPreview: React.FC<ServicePublicAdPreviewProps> = ({
           <span className="truncate max-w-[90px]">{category || 'Geral'}</span>
         </span>
 
-        {/* Badge do Tipo de Mídia (5s, Slide ou Foto) */}
-        {displayMode === 'video' ? (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-emerald-500/40 text-emerald-400 text-[8px] font-black uppercase tracking-wider shadow-sm">
-            <Video className="w-2.5 h-2.5 text-emerald-400" />
-            <span>5s</span>
-          </span>
-        ) : displayMode === 'slideshow' ? (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-emerald-500/40 text-emerald-400 text-[8px] font-black uppercase tracking-wider shadow-sm">
-            <Images className="w-2.5 h-2.5 text-emerald-400" />
-            <span>Slide ({effectivePhotos.length})</span>
-          </span>
+        {/* Badge do Tipo de Mídia (5s, Slide, Foto ou Sem Mídia) */}
+        {isMediaPresent ? (
+          displayMode === 'video' ? (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-emerald-500/40 text-emerald-400 text-[8px] font-black uppercase tracking-wider shadow-sm">
+              <Video className="w-2.5 h-2.5 text-emerald-400" />
+              <span>5s</span>
+            </span>
+          ) : displayMode === 'slideshow' ? (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-emerald-500/40 text-emerald-400 text-[8px] font-black uppercase tracking-wider shadow-sm">
+              <Images className="w-2.5 h-2.5 text-emerald-400" />
+              <span>Slide ({effectivePhotos.length})</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/70 text-slate-300 text-[8px] font-black uppercase tracking-wider shadow-sm">
+              <ImageIcon className="w-2.5 h-2.5 text-emerald-400" />
+              <span>Foto</span>
+            </span>
+          )
         ) : (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/70 text-slate-300 text-[8px] font-black uppercase tracking-wider shadow-sm">
-            <ImageIcon className="w-2.5 h-2.5 text-emerald-400" />
-            <span>Foto</span>
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-amber-500/40 text-amber-300 text-[8px] font-black uppercase tracking-wider shadow-sm">
+            <span>Prévia</span>
           </span>
         )}
       </div>

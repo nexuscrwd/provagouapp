@@ -15,6 +15,34 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Refatoração Completa do Fluxo de Cadastro de Serviço & Desacoplamento de Mídia
+- **Tipo:** `[Refactor / UX / Architecture]`
+- **Motivo:** Simplificar o gerenciamento global de serviços e categorias, removendo botões dispersos de criação e implementando um fluxo passo a passo intuitivo e focado:
+  1. Criação/Seleção de Categoria (com suporte a criação inline rápida).
+  2. Definição dos dados essenciais do serviço: Nome, Preço, Duração e Descrição.
+  3. Criação imediata do serviço com estado de preview limpo (sem mídia inicial obrigatória).
+  4. Módulo de Mídia desacoplado por serviço via modal dedicado com suporte completo a Foto Única, Slide (até 5 fotos) e Vídeo 5s, oferecendo as opções "Biblioteca", "Do Dispositivo" e "Capturar".
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Remoção dos botões dispersos de criação do estado global e consolidação em botão único "Novo Serviço".
+    - Fluxo passo a passo de cadastro simplificado (Categoria -> Nome -> Preço/Duração -> Descrição).
+    - Gerenciador de mídia sob demanda por serviço (`handleOpenMediaManager`) com modal dedicado e seletor de formato (Foto única, Slide até 5 fotos, Vídeo 5s).
+    - Modal de biblioteca de fotos e vídeos com filtros de categoria e upload/captura direta via câmera e arquivo.
+    - Modal de visualização prévia em alta fidelidade (`ServicePublicAdPreview`).
+  - `src/components/professional/ServicePublicAdPreview.tsx`:
+    - Suporte a pré-visualização quando o serviço ainda não possui mídia cadastrada (fallback elegante sem quebra de layout).
+- **Resultado:**
+  - Fluxo de trabalho do profissional altamente focado, sem sobrecarga cognitiva.
+  - Zero poluição visual e conformidade estrita com o Design System do Vagou (verde com texto branco, Dark Theme).
+  - Validação completa com `lint_applet` e `compile_applet`.
+
+### [2026-09-17] — Remoção do Campo de Busca em Categorias & Serviços
+- **Tipo:** `[Refactor / UI / Clean Code]`
+- **Motivo:** Remover o campo de input de busca rápida em `ProfessionalServicesManager.tsx` conforme seleção em Focus Mode, otimizando o espaço visual e deixando a interface do profissional mais limpa e focada nos chips de categorias.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`: Remoção do input de busca, ícone `Search` não utilizado, estado `searchQuery` e simplificação da filtragem por categoria.
+- **Resultado:** Interface mais direta e limpa, 100% livre de código morto e aprovada em testes de compilação.
+
 ### [2026-09-17] — Desacoplamento do Efeito Landing Page no Modo Gerenciamento (`isGerMode`)
 - **Tipo:** `[Refactor / UI / UX / Navigation]`
 - **Motivo:** Remover o efeito de landing page (scroll contínuo e snap) quando o profissional estiver no "Modo Gerenciamento" (`Ger.`), tornando a navegação puramente baseada em botões e mantendo a landing page intacta no "Modo Público" (`Púb.`).
