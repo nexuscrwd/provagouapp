@@ -55,7 +55,7 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
   };
 
   // Estados de Filtro para os Atendimentos do Painel
-  const [timeFilter, setTimeFilter] = React.useState<'proximo' | 'hoje' | 'semana' | 'mes'>('hoje');
+  const [timeFilter, setTimeFilter] = React.useState<'proximo' | 'hoje' | 'semana' | 'mes'>('proximo');
   const [statusFilter, setStatusFilter] = React.useState<'concluidos' | 'confirmados' | 'pendentes' | 'cancelados'>('confirmados');
 
   // Filtragem Dinâmica de Próximos Clientes com base nos filtros selecionados
@@ -260,145 +260,141 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
       </div>
 
       {/* 2. Métricas Rápidas em Grid - Filtros Interativos em Duas Linhas */}
-      <div className="p-3.5 space-y-2 flex-1 min-h-0">
-        <div className={`p-2.5 rounded-lg border flex flex-col gap-2 ${
-          isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'
-        }`}>
-          {/* Primeira Linha: Período (Próximo, Hoje, Semana, Mês) */}
-          <div className="grid grid-cols-4 gap-1.5">
-            {(
-              [
-                { id: 'proximo', label: 'Próximo', icon: Clock },
-                { id: 'hoje', label: 'Hoje', icon: Calendar },
-                { id: 'semana', label: 'Semana', icon: CalendarDays },
-                { id: 'mes', label: 'Mês', icon: CalendarRange },
-              ] as const
-            ).map((tTab) => {
-              const IconComp = tTab.icon;
-              const isActive = timeFilter === tTab.id;
+      <div className="p-3.5 space-y-2.5 flex-1 min-h-0">
+        {/* Primeira Linha: Período (Próximo, Hoje, Semana, Mês) */}
+        <div className="grid grid-cols-4 gap-1.5">
+          {(
+            [
+              { id: 'proximo', label: 'Próximo', icon: Clock },
+              { id: 'hoje', label: 'Hoje', icon: Calendar },
+              { id: 'semana', label: 'Semana', icon: CalendarDays },
+              { id: 'mes', label: 'Mês', icon: CalendarRange },
+            ] as const
+          ).map((tTab) => {
+            const IconComp = tTab.icon;
+            const isActive = timeFilter === tTab.id;
 
-              // Calcular contagem de atendimentos para este período específico
-              const count = appointments.filter((app) => {
-                let appDate = new Date();
-                if (app.dateIso) {
-                  appDate = new Date(app.dateIso + 'T00:00:00');
-                } else {
-                  const match = app.dateTime?.match(/(\d{2})\/(\d{2})/);
-                  if (match) {
-                    const day = parseInt(match[1], 10);
-                    const month = parseInt(match[2], 10) - 1;
-                    const year = new Date().getFullYear();
-                    appDate = new Date(year, month, day);
-                  } else if (app.dayGroup === 'Hoje' || app.dateTime?.includes('Hoje')) {
-                    appDate = new Date();
-                  }
+            // Calcular contagem de atendimentos para este período específico
+            const count = appointments.filter((app) => {
+              let appDate = new Date();
+              if (app.dateIso) {
+                appDate = new Date(app.dateIso + 'T00:00:00');
+              } else {
+                const match = app.dateTime?.match(/(\d{2})\/(\d{2})/);
+                if (match) {
+                  const day = parseInt(match[1], 10);
+                  const month = parseInt(match[2], 10) - 1;
+                  const year = new Date().getFullYear();
+                  appDate = new Date(year, month, day);
+                } else if (app.dayGroup === 'Hoje' || app.dateTime?.includes('Hoje')) {
+                  appDate = new Date();
                 }
-                const now = new Date();
-                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-
-                if (tTab.id === 'hoje') {
-                  return appDate >= todayStart && appDate <= todayEnd;
-                } else if (tTab.id === 'proximo') {
-                  return appDate >= todayStart;
-                } else if (tTab.id === 'semana') {
-                  const sunday = new Date(todayStart);
-                  sunday.setDate(todayStart.getDate() - todayStart.getDay());
-                  const saturday = new Date(sunday);
-                  saturday.setDate(sunday.getDate() + 6);
-                  saturday.setHours(23, 59, 59, 999);
-                  return appDate >= sunday && appDate <= saturday;
-                } else if (tTab.id === 'mes') {
-                  return appDate.getMonth() === now.getMonth() && appDate.getFullYear() === now.getFullYear();
-                }
-                return true;
-              }).length;
-
-              return (
-                <button
-                  key={tTab.id}
-                  type="button"
-                  onClick={() => {
-                    hapticLight();
-                    setTimeFilter(tTab.id);
-                  }}
-                  className={`p-2 rounded-lg border flex flex-col justify-between items-start text-left transition cursor-pointer active:scale-97 select-none ${
-                    isActive
-                      ? 'bg-emerald-500 border-emerald-500 text-white font-bold shadow-xs'
-                      : isDark
-                      ? 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full mb-0.5 min-w-0">
-                    <span className="text-[8.5px] font-bold uppercase tracking-tight whitespace-nowrap truncate">
-                      {tTab.label}
-                    </span>
-                    <IconComp className={`w-2.5 h-2.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
-                  </div>
-                  <p className={`text-xs font-black leading-none ${isActive ? 'text-white' : isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                    {count}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Segunda Linha: Status (Concluído, Confirmado, Pendentes, Cancelados) */}
-          <div className="grid grid-cols-4 gap-1.5">
-            {(
-              [
-                { id: 'concluidos', label: 'Concluído' },
-                { id: 'confirmados', label: 'Confirmado' },
-                { id: 'pendentes', label: 'Pendentes' },
-                { id: 'cancelados', label: 'Cancelados' },
-              ] as const
-            ).map((sTab) => {
-              const isActive = statusFilter === sTab.id;
-              const count = categoryCounts[sTab.id] || 0;
-
-              // Cores de destaques e contraste oposto rígido
-              let activeClass = 'bg-emerald-500 border-emerald-500 text-white font-bold shadow-xs';
-              if (sTab.id === 'pendentes') {
-                activeClass = 'bg-amber-500 border-amber-500 text-slate-950 font-bold shadow-xs';
-              } else if (sTab.id === 'cancelados') {
-                activeClass = 'bg-rose-500 border-rose-500 text-white font-bold shadow-xs';
-              } else if (sTab.id === 'concluidos') {
-                activeClass = 'bg-slate-700 border-slate-600 text-white font-bold shadow-xs';
               }
+              const now = new Date();
+              const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
-              return (
-                <button
-                  key={sTab.id}
-                  type="button"
-                  onClick={() => {
-                    hapticLight();
-                    setStatusFilter(sTab.id);
-                  }}
-                  className={`p-2 rounded-lg border flex flex-col justify-between items-start text-left transition cursor-pointer active:scale-97 select-none ${
-                    isActive
-                      ? activeClass
-                      : isDark
-                      ? 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full mb-0.5 min-w-0">
-                    <span className="text-[8.5px] font-bold uppercase tracking-tight whitespace-nowrap truncate">
-                      {sTab.label}
-                    </span>
-                  </div>
-                  <p className={`text-xs font-black leading-none ${
-                    isActive
-                      ? sTab.id === 'pendentes' ? 'text-slate-950' : 'text-white'
-                      : isDark ? 'text-slate-200' : 'text-slate-800'
-                  }`}>
-                    {count}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
+              if (tTab.id === 'hoje') {
+                return appDate >= todayStart && appDate <= todayEnd;
+              } else if (tTab.id === 'proximo') {
+                return appDate >= todayStart;
+              } else if (tTab.id === 'semana') {
+                const sunday = new Date(todayStart);
+                sunday.setDate(todayStart.getDate() - todayStart.getDay());
+                const saturday = new Date(sunday);
+                saturday.setDate(sunday.getDate() + 6);
+                saturday.setHours(23, 59, 59, 999);
+                return appDate >= sunday && appDate <= saturday;
+              } else if (tTab.id === 'mes') {
+                return appDate.getMonth() === now.getMonth() && appDate.getFullYear() === now.getFullYear();
+              }
+              return true;
+            }).length;
+
+            return (
+              <button
+                key={tTab.id}
+                type="button"
+                onClick={() => {
+                  hapticLight();
+                  setTimeFilter(tTab.id);
+                }}
+                className={`p-2 rounded-lg border flex flex-col justify-between items-start text-left transition cursor-pointer active:scale-97 select-none ${
+                  isActive
+                    ? 'bg-emerald-500 border-emerald-500 text-white font-bold shadow-xs'
+                    : isDark
+                    ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full mb-0.5 min-w-0">
+                  <span className="text-[8.5px] font-bold uppercase tracking-tight whitespace-nowrap truncate">
+                    {tTab.label}
+                  </span>
+                  <IconComp className={`w-2.5 h-2.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                </div>
+                <p className={`text-xs font-black leading-none ${isActive ? 'text-white' : isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                  {count}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Segunda Linha: Status (Confirmado, Pendentes, Concluidos, Cancelados) */}
+        <div className="grid grid-cols-4 gap-1.5">
+          {(
+            [
+              { id: 'confirmados', label: 'Confirmado' },
+              { id: 'pendentes', label: 'Pendentes' },
+              { id: 'concluidos', label: 'Concluído' },
+              { id: 'cancelados', label: 'Cancelados' },
+            ] as const
+          ).map((sTab) => {
+            const isActive = statusFilter === sTab.id;
+            const count = categoryCounts[sTab.id] || 0;
+
+            // Cores de destaques e contraste oposto rígido
+            let activeClass = 'bg-emerald-500 border-emerald-500 text-white font-bold shadow-xs';
+            if (sTab.id === 'pendentes') {
+              activeClass = 'bg-amber-500 border-amber-500 text-slate-950 font-bold shadow-xs';
+            } else if (sTab.id === 'cancelados') {
+              activeClass = 'bg-rose-500 border-rose-500 text-white font-bold shadow-xs';
+            } else if (sTab.id === 'concluidos') {
+              activeClass = 'bg-slate-700 border-slate-600 text-white font-bold shadow-xs';
+            }
+
+            return (
+              <button
+                key={sTab.id}
+                type="button"
+                onClick={() => {
+                  hapticLight();
+                  setStatusFilter(sTab.id);
+                }}
+                className={`p-2 rounded-lg border flex flex-col justify-between items-start text-left transition cursor-pointer active:scale-97 select-none ${
+                  isActive
+                    ? activeClass
+                    : isDark
+                    ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full mb-0.5 min-w-0">
+                  <span className="text-[8.5px] font-bold uppercase tracking-tight whitespace-nowrap truncate">
+                    {sTab.label}
+                  </span>
+                </div>
+                <p className={`text-xs font-black leading-none ${
+                  isActive
+                    ? sTab.id === 'pendentes' ? 'text-slate-950' : 'text-white'
+                    : isDark ? 'text-slate-200' : 'text-slate-800'
+                }`}>
+                  {count}
+                </p>
+              </button>
+            );
+          })}
         </div>
 
         {/* 4. Próximos Atendimentos */}

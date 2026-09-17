@@ -50,8 +50,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   const establishmentTabs = [
     { id: 'home' as const, label: 'Início', icon: isProfessionalMode ? LayoutDashboard : Home },
-    { id: 'servicos' as const, label: 'Serviços', icon: ServicesIcon },
     { id: 'vagas' as const, label: vagasTabLabel, icon: Calendar },
+    { id: 'servicos' as const, label: 'Serviços', icon: ServicesIcon },
     { id: 'espaco' as const, label: spaceTabLabel, icon: SpaceIcon },
   ];
 

@@ -15,6 +15,35 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Seleção Inicial "Próximo" e Reordenação do Menu Rodapé (BottomNav)
+- **Tipo:** `[UI / UX]`
+- **Motivo / Solicitação:** Ajustar a seleção inicial do filtro de tempo para "Próximo" por padrão e reordenar as abas do menu de navegação inferior (rodapé) para a sequência exata: `Início`, `Agenda`, `Serviços` e `Espaço`.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Alterado o estado inicial `timeFilter` de `'hoje'` para `'proximo'`.
+  - `src/components/BottomNav.tsx`: Reorganizada a lista `establishmentTabs` para a nova ordem lógica de navegação: `home` (Início), `vagas` (Agenda / Agendar), `servicos` (Serviços) e `espaco` (Espaço).
+- **Resultado:**
+  - Carregamento inicial do painel direcionado para a visualização dos agendamentos futuros imediatos ("Próximo").
+  - Navegação do rodapé fluida e estruturada na ordem exata solicitada pelo usuário.
+
+### [2026-09-17] — Reordenação das Categorias de Status nos Filtros do Dashboard e Agenda
+- **Tipo:** `[UI / UX]`
+- **Motivo / Solicitação:** Alterar a ordem das abas/mini-cards de status de acordo com o pedido do usuário para exibir na sequência: `Confirmado`, `Pendentes`, `Concluído` e `Cancelados`.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Reorganizada a segunda linha de status para `Confirmado`, `Pendentes`, `Concluído` e `Cancelados`.
+  - `src/components/professional/ProfessionalAgendaView.tsx`: Reordenado também o bloco de controle da Agenda para assegurar a mesma sequência e manter a consistência de navegação.
+- **Resultado:**
+  - Navegação unificada e lógica idêntica entre o Início (Dashboard) e a Agenda do profissional.
+
+### [2026-09-17] — Remoção da Div de Fundo e Adoção de Layout Plano (Flat & Clean) nos Cards de Filtros
+- **Tipo:** `[UI / UX / Fix]`
+- **Motivo / Solicitação:** Remover a div de fundo que envolvia os mini-cards de filtros, aplicando o princípio de **Layout Plano (Flat & Clean)** e eliminando completamente a "caixa dentro de caixa" (divs de bordas aninhadas), deixando os cards respirarem diretamente no fundo do aplicativo.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`:
+    - Removido o container intermediário (`rounded-lg border bg-slate-900 border-slate-800` / `bg-slate-50 border-slate-200`) que encapsulava as duas linhas de cards.
+    - Mantidos os cards de forma limpa, posicionados diretamente na grade de visualização.
+- **Resultado:**
+  - Visual plano, sofisticado e sem redundância de bordas, cumprindo perfeitamente as diretrizes de design do Vagou.
+
 ### [2026-09-17] — Conversão dos Cards de Métricas Estáticos em Filtros Interativos em Duas Linhas (Dashboard)
 - **Tipo:** `[UI / UX / Refactoring]`
 - **Motivo / Solicitação:** Atender à solicitação exata do usuário para aplicar as mudanças de layout e os filtros de período/status diretamente no grupo de cards selecionado (Métricas Rápidas no topo do painel), substituindo os antigos indicadores estáticos (`Hoje`, `Serviços`, `Total`) por botões de filtro em formato de mini-cards dinâmicos organizados em duas linhas.

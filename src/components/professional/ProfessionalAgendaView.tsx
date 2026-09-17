@@ -479,14 +479,14 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
           })}
         </div>
 
-        {/* Segunda Linha: Status (Concluído, Confirmado, Pendentes, Cancelados) */}
+        {/* Segunda Linha: Status (Confirmado, Pendentes, Concluidos, Cancelados) */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
           {(
             [
               { id: 'todos', label: 'Todos' },
-              { id: 'concluidos', label: 'Concluído' },
               { id: 'confirmados', label: 'Confirmado' },
               { id: 'pendentes', label: 'Pendentes' },
+              { id: 'concluidos', label: 'Concluído' },
               { id: 'cancelados', label: 'Cancelados' },
             ] as const
           ).map((sTab) => {
