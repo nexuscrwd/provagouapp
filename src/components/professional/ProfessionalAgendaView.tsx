@@ -17,7 +17,7 @@ export interface ProfessionalAgendaViewProps {
   professionals?: SalonProfessionalItem[];
 }
 
-export type DemandStatusKey = 'confirmados' | 'pendentes' | 'concluidos' | 'alterados' | 'cancelados';
+export type DemandStatusKey = 'confirmados' | 'pendentes' | 'concluidos' | 'cancelados';
 
 export const getStatusCategory = (statusRaw?: string): { 
   key: DemandStatusKey; 
@@ -32,6 +32,21 @@ export const getStatusCategory = (statusRaw?: string): {
 } => {
   const status = (statusRaw || '').toUpperCase().trim();
 
+  // 2. ALTERAÇÃO (entram na categoria PENDENTE em amarelo até ambos aceitarem a alteração)
+  if (status.includes('ALTER') || status.includes('REMANEJ') || status.includes('REAGEND')) {
+    return {
+      key: 'pendentes',
+      order: 2,
+      label: 'Alteração (Aguardando Aceite Mútuo)',
+      shortLabel: 'Alteração',
+      badgeBg: 'bg-amber-500/15',
+      badgeText: 'text-amber-400',
+      badgeBorder: 'border-amber-500/30',
+      badgeFullClass: 'bg-amber-500/15 border-amber-500/30 text-amber-400',
+      dotColor: 'bg-amber-400'
+    };
+  }
+
   // 2. PENDENTES (aguarda confirmação do profissional)
   if (status.includes('PEND') || status.includes('AGUARD')) {
     return {
@@ -44,21 +59,6 @@ export const getStatusCategory = (statusRaw?: string): {
       badgeBorder: 'border-amber-500/30',
       badgeFullClass: 'bg-amber-500/15 border-amber-500/30 text-amber-400',
       dotColor: 'bg-amber-400'
-    };
-  }
-
-  // 4. ALTERADOS (horários remanejados e aceitos por ambos)
-  if (status.includes('ALTER') || status.includes('REMANEJ') || status.includes('REAGEND')) {
-    return {
-      key: 'alterados',
-      order: 4,
-      label: 'Alterados (Horários Remanejados)',
-      shortLabel: 'Alterado',
-      badgeBg: 'bg-indigo-500/15',
-      badgeText: 'text-indigo-400',
-      badgeBorder: 'border-indigo-500/30',
-      badgeFullClass: 'bg-indigo-500/15 border-indigo-500/30 text-indigo-400',
-      dotColor: 'bg-indigo-400'
     };
   }
 
@@ -132,7 +132,8 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
   const [calendarViewDate, setCalendarViewDate] = useState<Date>(new Date());
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
 
-  const [filter, setFilter] = useState<'todos' | 'confirmados' | 'pendentes' | 'concluidos' | 'alterados' | 'cancelados'>('todos');
+  const [timeFilter, setTimeFilter] = useState<'proximo' | 'hoje' | 'semana' | 'mes'>('hoje');
+  const [filter, setFilter] = useState<'todos' | 'confirmados' | 'pendentes' | 'concluidos' | 'cancelados'>('todos');
   
   // Modais
   const [selectedAppointment, setSelectedAppointment] = useState<BookingAppointment | null>(null);
@@ -229,31 +230,52 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
     return grid;
   }, [calendarViewDate]);
 
-  // 1. Agendamentos filtrados pela data selecionada
+  // 1. Agendamentos filtrados pela data/intervalo selecionado (Próximo, Hoje, Semana, Mês)
   const dayAppointments = useMemo(() => {
     return appointments.filter((app) => {
-      if (isSelectedDateToday) {
-        if (app.dayGroup === 'Hoje' || app.dateTime?.includes('Hoje') || !app.dayGroup) {
-          return true;
+      let appDate = new Date();
+      if (app.dateIso) {
+        appDate = new Date(app.dateIso + 'T00:00:00');
+      } else {
+        const match = app.dateTime?.match(/(\d{2})\/(\d{2})/);
+        if (match) {
+          const day = parseInt(match[1], 10);
+          const month = parseInt(match[2], 10) - 1;
+          const year = new Date().getFullYear();
+          appDate = new Date(year, month, day);
+        } else if (app.dayGroup === 'Hoje' || app.dateTime?.includes('Hoje')) {
+          appDate = new Date();
         }
       }
 
-      if (app.dateIso) {
-        const formattedSelIso = selectedDate.toISOString().split('T')[0];
-        if (app.dateIso === formattedSelIso) return true;
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+      if (timeFilter === 'hoje') {
+        return appDate >= todayStart && appDate <= todayEnd;
       }
 
-      const dayNum = selectedDate.getDate().toString().padStart(2, '0');
-      const monthNum = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
-      const formattedShortDate = `${dayNum}/${monthNum}`;
-
-      if (app.dateTime?.includes(formattedShortDate) || app.dayGroup?.includes(formattedShortDate)) {
-        return true;
+      if (timeFilter === 'proximo') {
+        return appDate >= todayStart;
       }
 
-      return false;
+      if (timeFilter === 'semana') {
+        const sunday = new Date(todayStart);
+        sunday.setDate(todayStart.getDate() - todayStart.getDay());
+        const saturday = new Date(sunday);
+        saturday.setDate(sunday.getDate() + 6);
+        saturday.setHours(23, 59, 59, 999);
+        return appDate >= sunday && appDate <= saturday;
+      }
+
+      if (timeFilter === 'mes') {
+        return appDate.getMonth() === now.getMonth() && appDate.getFullYear() === now.getFullYear();
+      }
+
+      return true;
     });
-  }, [appointments, selectedDate, isSelectedDateToday]);
+  }, [appointments, timeFilter]);
 
   // 2. Contadores para as abas de demanda do dia
   const categoryCounts = useMemo(() => {
@@ -262,7 +284,6 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
       confirmados: 0,
       pendentes: 0,
       concluidos: 0,
-      alterados: 0,
       cancelados: 0,
     };
 
@@ -286,10 +307,9 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
 
   // 4. Lista Ordenada pela hierarquia da Demanda do Dia:
   // 1º Confirmados (próximos aos últimos)
-  // 2º Pendentes (próximos aos últimos)
+  // 2º Pendentes & Alterações (próximos aos últimos)
   // 3º Concluídos (próximos aos últimos)
-  // 4º Alterados (próximos aos últimos)
-  // 5º Cancelados (próximos aos últimos)
+  // 4º Cancelados (próximos aos últimos)
   const sortedAppointments = useMemo(() => {
     return [...filteredAppointments].sort((a, b) => {
       const catA = getStatusCategory(a.status);
@@ -423,53 +443,87 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
         </div>
       </div>
 
-      {/* 3. Filtros de Status da Demanda */}
-      <div className={`px-3.5 py-1.5 border-b flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 ${
+      {/* 3. Filtros Duplos de Data (Período) e Status da Demanda */}
+      <div className={`px-3.5 py-2 border-b flex flex-col gap-2 shrink-0 ${
         isDark ? 'bg-slate-950 border-slate-800/60' : 'bg-slate-50 border-slate-200'
       }`}>
-        {(
-          [
-            { id: 'todos', label: 'Todos' },
-            { id: 'confirmados', label: 'Confirmados' },
-            { id: 'pendentes', label: 'Pendentes' },
-            { id: 'concluidos', label: 'Concluídos' },
-            { id: 'alterados', label: 'Alterados' },
-            { id: 'cancelados', label: 'Cancelados' },
-          ] as const
-        ).map((tab) => {
-          const count = categoryCounts[tab.id] || 0;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => {
-                hapticLight();
-                setFilter(tab.id);
-              }}
-              className={`px-2 py-0.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition cursor-pointer whitespace-nowrap border flex items-center gap-1 ${
-                filter === tab.id
-                  ? 'bg-emerald-500 border-emerald-500 text-white'
-                  : isDark
-                  ? 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
-                  : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span className={`px-1 py-0.1 rounded-[4px] text-[8.5px] font-mono font-bold ${
-                filter === tab.id
-                  ? 'bg-emerald-600 text-white'
-                  : isDark
-                  ? 'bg-slate-800 text-slate-300'
-                  : 'bg-slate-100 text-slate-700'
-              }`}>
-                {count}
-              </span>
-            </button>
-          );
-        })}
+        {/* Primeira Linha: Período (Próximo, Hoje, Semana, Mês) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          {(
+            [
+              { id: 'proximo', label: 'Próximo' },
+              { id: 'hoje', label: 'Hoje' },
+              { id: 'semana', label: 'Semana' },
+              { id: 'mes', label: 'Mês' },
+            ] as const
+          ).map((tTab) => {
+            return (
+              <button
+                key={tTab.id}
+                type="button"
+                onClick={() => {
+                  hapticLight();
+                  setTimeFilter(tTab.id);
+                }}
+                className={`px-2.5 py-1 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition cursor-pointer whitespace-nowrap border flex items-center gap-1 active:scale-98 ${
+                  timeFilter === tTab.id
+                    ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
+                    : isDark
+                    ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                    : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tTab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Segunda Linha: Status (Concluído, Confirmado, Pendentes, Cancelados) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          {(
+            [
+              { id: 'todos', label: 'Todos' },
+              { id: 'concluidos', label: 'Concluído' },
+              { id: 'confirmados', label: 'Confirmado' },
+              { id: 'pendentes', label: 'Pendentes' },
+              { id: 'cancelados', label: 'Cancelados' },
+            ] as const
+          ).map((sTab) => {
+            const count = categoryCounts[sTab.id] || 0;
+            return (
+              <button
+                key={sTab.id}
+                type="button"
+                onClick={() => {
+                  hapticLight();
+                  setFilter(sTab.id);
+                }}
+                className={`px-2.5 py-1 rounded-[4px] text-[10px] font-bold uppercase tracking-wider transition cursor-pointer whitespace-nowrap border flex items-center gap-1 active:scale-98 ${
+                  filter === sTab.id
+                    ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
+                    : isDark
+                    ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                    : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>{sTab.label}</span>
+                <span className={`px-1 py-0.2 rounded-[4px] text-[8.5px] font-mono font-bold ${
+                  filter === sTab.id
+                    ? 'bg-emerald-600 text-white'
+                    : isDark
+                    ? 'bg-slate-800 text-slate-300'
+                    : 'bg-slate-100 text-slate-700'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* 4. Lista Ordenada pela Demanda do Dia (Confirmados -> Pendentes -> Concluídos -> Alterados -> Cancelados) */}
+      {/* 4. Lista Ordenada pela Demanda do Dia (Confirmados -> Pendentes -> Concluídos -> Cancelados) */}
       <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1.5">
         {sortedAppointments.length === 0 ? (
           <div className={`p-6 rounded-[4px] border text-center my-4 ${
@@ -747,22 +801,26 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
 
             {/* Conteúdo Rolável do Modal */}
             <div className="p-4 overflow-y-auto space-y-3.5 text-xs">
-              {/* Contexto especial para Pendentes ou Alterados */}
+              {/* Contexto especial para Pendentes ou Alterações */}
               {(() => {
+                const stUpper = (selectedAppointment.status || '').toUpperCase();
+                const isAlter = stUpper.includes('ALTER') || stUpper.includes('REMANEJ') || stUpper.includes('REAGEND');
+
+                if (isAlter) {
+                  return (
+                    <div className="p-2.5 rounded-[4px] bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4 shrink-0 text-amber-400" />
+                      <span>Solicitação de alteração de horário. Aguardando aceite mútuo para ser confirmado.</span>
+                    </div>
+                  );
+                }
+
                 const catKey = getStatusCategory(selectedAppointment.status).key;
                 if (catKey === 'pendentes') {
                   return (
                     <div className="p-2.5 rounded-[4px] bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] flex items-center gap-2">
                       <Clock className="w-4 h-4 shrink-0 text-amber-400" />
                       <span>Agendamento realizado pelo cliente. Aguardando sua confirmação.</span>
-                    </div>
-                  );
-                }
-                if (catKey === 'alterados') {
-                  return (
-                    <div className="p-2.5 rounded-[4px] bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-[11px] flex items-center gap-2">
-                      <RefreshCw className="w-4 h-4 shrink-0 text-indigo-400" />
-                      <span>Horário remanejado pelo cliente/profissional e aprovado por ambos.</span>
                     </div>
                   );
                 }
@@ -896,6 +954,32 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
               isDark ? 'border-slate-800 bg-slate-950/95' : 'border-slate-200 bg-white/95'
             } backdrop-blur-xs`}>
               {(() => {
+                const stUpper = (selectedAppointment.status || '').toUpperCase();
+                const isAlter = stUpper.includes('ALTER') || stUpper.includes('REMANEJ') || stUpper.includes('REAGEND');
+
+                if (isAlter) {
+                  return (
+                    <div className="flex items-center gap-2 w-full">
+                      <button
+                        type="button"
+                        onClick={() => handleStatusChange(selectedAppointment.protocolCode, 'CANCELADO')}
+                        className="flex-1 py-2 rounded-[4px] border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1"
+                      >
+                        <X className="w-3.5 h-3.5 text-rose-400" />
+                        <span>Recusar</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleStatusChange(selectedAppointment.protocolCode, 'CONFIRMADO')}
+                        className="flex-1 py-2 rounded-[4px] bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1 shadow-xs"
+                      >
+                        <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                        <span>Aceitar Alteração</span>
+                      </button>
+                    </div>
+                  );
+                }
+
                 const catKey = getStatusCategory(selectedAppointment.status).key;
 
                 if (catKey === 'pendentes') {
@@ -926,10 +1010,10 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
                     <div className="grid grid-cols-3 gap-1.5 w-full">
                       <button
                         type="button"
-                        onClick={() => handleStatusChange(selectedAppointment.protocolCode, 'ALTERADO')}
-                        className="py-2 px-1 rounded-[4px] border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-[10.5px] font-bold transition cursor-pointer flex items-center justify-center gap-1"
+                        onClick={() => handleStatusChange(selectedAppointment.protocolCode, 'ALTERAÇÃO')}
+                        className="py-2 px-1 rounded-[4px] border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-[10.5px] font-bold transition cursor-pointer flex items-center justify-center gap-1"
                       >
-                        <RefreshCw className="w-3 h-3 text-indigo-400" />
+                        <RefreshCw className="w-3 h-3 text-amber-400" />
                         <span>Remanejar</span>
                       </button>
                       <button
@@ -939,37 +1023,6 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
                       >
                         <X className="w-3 h-3 text-rose-400" />
                         <span>Cancelar</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleStatusChange(selectedAppointment.protocolCode, 'CONCLUÍDO')}
-                        className="py-2 px-1 rounded-[4px] bg-emerald-500 hover:bg-emerald-600 text-white text-[10.5px] font-bold uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1 shadow-xs"
-                      >
-                        <Check className="w-3 h-3 text-white stroke-[2.5]" />
-                        <span>Concluir</span>
-                      </button>
-                    </div>
-                  );
-                }
-
-                if (catKey === 'alterados') {
-                  return (
-                    <div className="grid grid-cols-3 gap-1.5 w-full">
-                      <button
-                        type="button"
-                        onClick={() => handleStatusChange(selectedAppointment.protocolCode, 'CANCELADO')}
-                        className="py-2 px-1 rounded-[4px] border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10.5px] font-bold transition cursor-pointer flex items-center justify-center gap-1"
-                      >
-                        <X className="w-3 h-3 text-rose-400" />
-                        <span>Cancelar</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleStatusChange(selectedAppointment.protocolCode, 'CONFIRMADO')}
-                        className="py-2 px-1 rounded-[4px] border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10.5px] font-bold transition cursor-pointer flex items-center justify-center gap-1"
-                      >
-                        <Check className="w-3 h-3 text-emerald-400" />
-                        <span>Confirmar</span>
                       </button>
                       <button
                         type="button"

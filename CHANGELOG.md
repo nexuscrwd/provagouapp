@@ -15,6 +15,69 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Conversão dos Cards de Métricas Estáticos em Filtros Interativos em Duas Linhas (Dashboard)
+- **Tipo:** `[UI / UX / Refactoring]`
+- **Motivo / Solicitação:** Atender à solicitação exata do usuário para aplicar as mudanças de layout e os filtros de período/status diretamente no grupo de cards selecionado (Métricas Rápidas no topo do painel), substituindo os antigos indicadores estáticos (`Hoje`, `Serviços`, `Total`) por botões de filtro em formato de mini-cards dinâmicos organizados em duas linhas.
+  - 1ª Linha (Filtros de Período): `Próximo`, `Hoje`, `Semana`, `Mês` (como mini-cards interativos com contagem em tempo real).
+  - 2ª Linha (Filtros de Status): `Concluído`, `Confirmado`, `Pendentes` (com contraste correto), `Cancelados`.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`:
+    - Substituída a div do grid de métricas estáticas (`grid grid-cols-3 gap-2`) pela nova estrutura de controle em formato de 2 linhas de 4 cartões clicáveis (`grid-cols-4`).
+    - Removidos os filtros duplicados que estavam abaixo, integrando a seleção de forma direta e unificada nos cartões superiores.
+    - Atualizados imports do `lucide-react` para remover ícones obsoletos (`Scissors`, `TrendingUp`) e adicionar ícones adequados (`CalendarDays`, `CalendarRange`) respeitando a regra de Zero Poluição.
+- **Resultado:**
+  - O design do painel ficou unificado, as métricas agora funcionam como botões interativos e responsivos que controlam os "Próximos Clientes", mantendo 100% de conformidade com os builds, linter e regras visuais do Vagou.
+
+### [2026-09-17] — Implementação de Filtros Duplos na Seção "Próximos Clientes" do Painel Inicial (Dashboard)
+- **Tipo:** `[UI / UX / Refactoring]`
+- **Motivo:** Introduzir a barra de filtros estruturada em duas linhas no feed de "Próximos Clientes" diretamente na tela de Início (Home/Dashboard) para permitir que o profissional controle e analise seus agendamentos rápidos de forma ágil e intuitiva.
+  - 1ª Linha (Filtros de Período): `Próximo`, `Hoje`, `Semana`, `Mês`.
+  - 2ª Linha (Filtros de Status): `Concluído`, `Confirmado`, `Pendentes` (unificando pendências e alterações sob o selo de destaque amarelo/âmbar), `Cancelados`.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`:
+    - Adicionados os estados `timeFilter` e `statusFilter` para gerenciar a filtragem reativa dos cartões.
+    - Implementado `filteredDashboardAppointments` e `categoryCounts` para calcular dinamicamente a contagem nos badges numéricos.
+    - Adicionado o container de filtros estruturados em duas linhas com suporte a scroll horizontal invisível e alinhamento visual perfeito.
+- **Resultado:**
+  - O profissional pode agora visualizar e controlar de forma ultra-precisa todos os agendamentos diretamente na página de entrada.
+  - builds e linter checados e validados com 100% de conformidade.
+
+### [2026-09-17] — Implementação de Filtros Duplos na Agenda (Linha de Período e Linha de Status)
+- **Tipo:** `[UI / UX / Refactoring]`
+- **Motivo:** Ajustar e estruturar a barra de filtros da Agenda do Profissional em duas linhas organizadas para otimização de espaço e navegação intuitiva:
+  - 1ª Linha (Filtro Temporal): `Próximo`, `Hoje`, `Semana`, `Mês`.
+  - 2ª Linha (Filtro de Status): `Todos`, `Concluído`, `Confirmado`, `Pendentes` (agrupando pendências de confirmação e de alteração com destaque em amarelo), `Cancelados`.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Adicionado o estado `timeFilter` para controle dinâmico do período temporal selecionado.
+    - Atualizada a lógica reativa de `dayAppointments` para calcular o intervalo correspondente (Hoje, Próximo, Semana atual, Mês atual) de forma automatizada.
+    - Substituído o design da barra de filtros de status por uma estrutura de duas linhas flexíveis e roláveis de forma elegante.
+- **Resultado:**
+  - Experiência do profissional extremamente fluida para analisar demandas diárias, semanais ou mensais com refinamento cirúrgico de status.
+  - Linter e builds checados e validados com 100% de sucesso.
+
+### [2026-09-17] — Ajuste Lógico do Status "Alterado" para a Categoria de Pendentes
+- **Tipo:** `[Logic / UI / Business Rules]`
+- **Motivo:** Unificar a lógica dos agendamentos alterados/reagendados sob a categoria "Pendentes" (pois aguardam aceite mútuo de ambos os lados para confirmação definitiva), rotulando como "Alteração" com destaque e borda em amarelo (destaque em âmbar/amarelo).
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Atualizado o tipo `DemandStatusKey` e o estado `filter` para remover a aba redundante `'alterados'`.
+    - Agendamentos de status `ALTERADO` agora incrementam e são filtrados diretamente sob a aba **Pendentes**.
+    - Atualizados os comentários explicativos e a ordenação na lista da agenda para agrupar Alterações e Pendentes em 2º lugar.
+- **Resultado:**
+  - Lógica simplificada de fluxo de aceite operacional e interface de filtros unificada de forma extremamente intuitiva.
+  - Linter e compilação do build de produção validados e aprovados.
+
+### [2026-09-17] — Formatação Resumida do Tempo Restante (`Temp Rest. XXHXX`)
+- **Tipo:** `[UI / UX Refinement]`
+- **Motivo:** Sintetizar o texto do tempo restante nos cards da seção Próximos Clientes para o formato compacto `Temp Rest. XXHXX` (ex: `Temp Rest. 01H25`), facilitando a leitura rápida em telas de celular.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`:
+    - Atualizada a função `getRemainingTimeText` para calcular e retornar a string formatada no padrão `Temp Rest. XXHXX`.
+    - Ajustado o rodapé dos cards do grid para exibir a síntese de forma destacada em fonte monoespaçada.
+- **Resultado:**
+  - Interface mobile ainda mais sintética, legível e livre de poluição visual.
+
 ### [2026-09-17] — Reestruturação dos "Próximos Clientes" em Grid com Pendentes e Tempo Restante
 - **Tipo:** `[Feat / UI / Business Rules]`
 - **Motivo:** Atualizar a seção de Próximos Clientes no Painel do Profissional para incluir agendamentos pendentes, exibir em formato de grid simples, destacar a hora com badge especial, incluir a descrição do serviço e tempo restante, e remover o valor monetário (R$).
