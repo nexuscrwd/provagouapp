@@ -7,6 +7,8 @@ export interface ThemeContextType {
   isDark: boolean;
   toggleTheme: () => void;
   setTheme: (theme: 'dark' | 'light') => void;
+  accentColor: string;
+  setAccentColor: (color: string) => void;
 }
 
 export const ThemeContext = createContext<ThemeContextType>({
@@ -14,6 +16,8 @@ export const ThemeContext = createContext<ThemeContextType>({
   isDark: true,
   toggleTheme: () => {},
   setTheme: () => {},
+  accentColor: 'emerald',
+  setAccentColor: () => {},
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -24,6 +28,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch {}
     return 'dark';
   });
+  
+  const [accentColor, setAccentColorState] = useState<string>(() => {
+      try {
+        return localStorage.getItem('vagou_accent_color') || 'emerald';
+      } catch {
+        return 'emerald';
+      }
+    });
 
   const isDark = theme === 'dark';
 
@@ -37,6 +49,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     } catch {}
   }, [theme]);
+  
+  useEffect(() => {
+    try {
+      localStorage.setItem('vagou_accent_color', accentColor);
+    } catch {}
+  }, [accentColor]);
 
   const toggleTheme = () => {
     setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
@@ -45,9 +63,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const setTheme = (newTheme: 'dark' | 'light') => {
     setThemeState(newTheme);
   };
+  
+  const setAccentColor = (color: string) => {
+    setAccentColorState(color);
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, isDark, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, isDark, toggleTheme, setTheme, accentColor, setAccentColor }}>
       {children}
     </ThemeContext.Provider>
   );

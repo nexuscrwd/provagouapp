@@ -2,11 +2,20 @@ import React, { useState } from 'react';
 import { 
   Store, Phone, MapPin, Clock, 
   KeyRound, Users, Plus, Trash2, 
-  Save, CheckCircle2, ShieldCheck, Check
+  Save, CheckCircle2, ShieldCheck, Check, Camera, Palette
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { SalonAdminSettings, SalonProfessionalItem } from '../../types';
 import { hapticSuccess, hapticLight } from '../../utils/haptics';
+
+// Definição dos presets de cores
+const COLOR_PRESETS = [
+  { name: 'emerald', class: 'bg-emerald-500', shadow: 'shadow-emerald-500/50' },
+  { name: 'blue', class: 'bg-blue-500', shadow: 'shadow-blue-500/50' },
+  { name: 'rose', class: 'bg-rose-500', shadow: 'shadow-rose-500/50' },
+  { name: 'amber', class: 'bg-amber-500', shadow: 'shadow-amber-500/50' },
+  { name: 'violet', class: 'bg-violet-500', shadow: 'shadow-violet-500/50' },
+];
 
 export interface ProfessionalSpaceManagerProps {
   adminSettings: SalonAdminSettings;
@@ -21,7 +30,7 @@ export const ProfessionalSpaceManager: React.FC<ProfessionalSpaceManagerProps> =
   professionals = [],
   onUpdateProfessionals,
 }) => {
-  const { isDark } = useTheme();
+  const { isDark, setAccentColor: setAccentColorContext } = useTheme();
 
   // Settings form states
   const [salonName, setSalonName] = useState(adminSettings.salonName || 'Barbearia Rota 99');
@@ -29,11 +38,24 @@ export const ProfessionalSpaceManager: React.FC<ProfessionalSpaceManagerProps> =
   const [salonAddress, setSalonAddress] = useState(adminSettings.salonAddress || 'Rua Harmonia, 123 - Vila Madalena');
   const [openingHours, setOpeningHours] = useState(adminSettings.openingHours || 'Seg a Sáb • 09:00 às 20:00');
   const [pinCode, setPinCode] = useState(adminSettings.pinCode || '1234');
+  const [salonLogo, setSalonLogo] = useState(adminSettings.salonLogo || '');
+  const [accentColor, setAccentColor] = useState(adminSettings.accentColor || 'emerald');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   // Team state
   const [newProName, setNewProName] = useState('');
   const [newProRole, setNewProRole] = useState('');
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSalonLogo(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +66,8 @@ export const ProfessionalSpaceManager: React.FC<ProfessionalSpaceManagerProps> =
       salonAddress,
       openingHours,
       pinCode,
+      salonLogo,
+      accentColor,
     });
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 2500);
@@ -90,6 +114,45 @@ export const ProfessionalSpaceManager: React.FC<ProfessionalSpaceManagerProps> =
               Salvo com Sucesso
             </span>
           )}
+        </div>
+
+        <div className="flex flex-col items-center justify-center gap-4 mb-6">
+          <div className="w-24 h-24 rounded-full bg-slate-800 border border-slate-700/50 flex items-center justify-center relative overflow-hidden">
+            {salonLogo ? (
+              <img src={salonLogo} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <Store className="w-10 h-10 text-slate-500" />
+            )}
+          </div>
+          <label className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider rounded cursor-pointer transition">
+            Alterar Logo
+            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+          </label>
+        </div>
+
+        {/* Seletor de Cor de Destaque */}
+        <div className="mb-6 p-4 rounded-xl border border-slate-800/50 bg-slate-900/30">
+          <div className="flex items-center gap-2 mb-3">
+            <Palette className="w-4 h-4 text-emerald-400" />
+            <h4 className="text-xs font-bold uppercase tracking-wider">Cor de Destaque</h4>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            {COLOR_PRESETS.map((color) => (
+                <button
+                  key={color.name}
+                  type="button"
+                  onClick={() => {
+                    setAccentColor(color.name);
+                    setAccentColorContext(color.name);
+                  }}
+                  className={`w-10 h-10 rounded-full transition-all border-2 ${
+                    accentColor === color.name 
+                      ? `border-white scale-110 shadow-lg ${color.shadow}` 
+                      : 'border-transparent opacity-60 hover:opacity-100'
+                  } ${color.class}`}
+                />
+            ))}
+          </div>
         </div>
 
         <div className="space-y-2">
