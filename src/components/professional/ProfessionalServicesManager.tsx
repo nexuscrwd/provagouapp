@@ -2,10 +2,11 @@ import React, { useState, useMemo, useRef } from 'react';
 import { 
   Plus, Edit2, Trash2, Scissors, Check, X, 
   Sparkles, Clock, Image as ImageIcon,
-  AlertCircle, Search, Video, Upload, Film, FolderPlus,
-  Images, Play, Camera, Eye, ChevronRight
+  AlertCircle, Video, Upload, Film, FolderPlus,
+  Images, Play, Camera, Eye, ChevronRight, Search
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+
 import { hapticLight, hapticSuccess, hapticMedium } from '../../utils/haptics';
 import { CatalogServiceItem } from '../../types';
 import { ServicePublicAdPreview } from './ServicePublicAdPreview';

@@ -15,6 +15,44 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Compatibilidade de Build no Cloudflare (Remoção do bun.lock Incompatível)
+- **Tipo:** `[Fix / DevOps / Cloudflare Deployment]`
+- **Motivo:** O Cloudflare Pages falhava no passo de instalação (`UnknownLockfileVersion: failed to parse lockfile: 'bun.lock' - lockfileVersion: 2`), pois detectava o arquivo `bun.lock` e tentava executar `bun install --frozen-lockfile` com uma versão do Bun que não suporta a especificação v2.
+- **Arquivos Impactados:**
+  - `bun.lock`: Arquivo removido para permitir que o Cloudflare utilize o gerenciador padrão do Node.js (`npm install`).
+- **Resultado:**
+  - Build do Cloudflare desbloqueado com sucesso usando o fluxo padrão do `npm`.
+
+
+### [2026-09-17] — Correção de Warning de Key Única no ProfessionalSpaceManager
+- **Tipo:** `[Fix / React / Stability]`
+- **Motivo:** O React alertou sobre elementos sem propriedade `key` única na listagem de profissionais em `ProfessionalSpaceManager`.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalSpaceManager.tsx`:
+    - Adicionado identificador único seguro (`pro.id || ${pro.name}-${idx}`) para as chaves da lista de membros da equipe.
+    - Atualizada a função `handleRemoveProfessional` para operar com base no identificador seguro.
+- **Resultado:**
+  - Zero warnings no console do React e renderização 100% íntegra.
+
+
+### [2026-09-17] — Correção de Importações e Módulos do Sistema
+- **Tipo:** `[Fix / Architecture / Stability]`
+- **Motivo:** O Vite reportou falhas na resolução de módulos essenciais (`ThemeContext`, `ProfessionalDashboardView`, `ProfessionalAgendaView`, `ProfessionalSpaceManager`, `bookingSlots`, `haptics`, `salonLogos` e ícone `Search`).
+- **Arquivos Impactados:**
+  - `src/context/ThemeContext.tsx`: Criado o provedor de tema (`ThemeProvider` e hook `useTheme`) com persistência em `localStorage` e suporte automático às classes do Tailwind.
+  - `src/main.tsx`: Envelopada a raiz da aplicação com o `<ThemeProvider>`.
+  - `src/utils/haptics.ts`: Criadas funções de feedback tátil mobile (`hapticLight`, `hapticMedium`, `hapticSuccess`).
+  - `src/utils/salonLogos.ts`: Criado resolvedor seguro de logotipos com fallback.
+  - `src/utils/bookingSlots.ts`: Criado gerador determinístico de horários disponíveis (`getAvailableSlotsForDate`).
+  - `src/types.ts`: Exportada a interface `SalonProfessionalItem`.
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Implementado o painel principal do profissional com métricas em tempo real, status aberto/fechado e atalhos rápidos.
+  - `src/components/professional/ProfessionalAgendaView.tsx`: Implementada a visão da agenda do dia com filtros por status e modal para inclusão manual de agendamentos.
+  - `src/components/professional/ProfessionalSpaceManager.tsx`: Implementada a gestão do espaço físico, equipe e PIN de segurança.
+  - `src/components/professional/ProfessionalServicesManager.tsx`: Adicionado import do ícone `Search`.
+- **Resultado:**
+  - Todos os erros de importação e compilação resolvidos; build e linter 100% verificados.
+
+
 ### [2026-09-17] — Prévia ao Vivo do Anúncio (Modo Público / Portal VagouApp)
 - **Tipo:** `[Feat / UI/UX / Real-Time Live Preview]`
 - **Motivo:** O profissional solicitou a capacidade de visualizar uma prévia em tempo real de como seu anúncio de serviço será exibido para clientes na seção de serviços do app em modo público e no portal VagouApp, contemplando os 3 modos de exibição (Foto Estática, Slide de Fotos com crossfade rotativo e Vídeo demonstrativo de 5 segundos).

@@ -86,6 +86,15 @@ export interface ServiceCategoryItem {
   isCustom?: boolean;
 }
 
+export interface SalonProfessionalItem {
+  id?: string;
+  name: string;
+  role?: string;
+  avatar?: string;
+  avatarUrl?: string;
+  rating?: number;
+}
+
 export interface CatalogServiceItem {
   id: string;
   title: string;
@@ -102,3 +111,4 @@ export interface CatalogServiceItem {
   displayMode?: 'static' | 'slideshow' | 'video';
   aspectRatio?: string;
 }
+
