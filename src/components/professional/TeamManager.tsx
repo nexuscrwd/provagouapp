@@ -40,7 +40,8 @@ export const TeamManager: React.FC = () => {
   const [formRole, setFormRole] = useState<ProfessionalRole>('professional');
   const [formPhone, setFormPhone] = useState('');
   const [formSpecialties, setFormSpecialties] = useState('');
-  
+  const [formAvatarUrl, setFormAvatarUrl] = useState('');
+
   const saveTeam = (newTeam: ProfessionalTeamMember[]) => {
     setTeam(newTeam);
     localStorage.setItem('vagou_team_members', JSON.stringify(newTeam));
@@ -54,14 +55,27 @@ export const TeamManager: React.FC = () => {
       setFormRole(member.role);
       setFormPhone(member.phone || '');
       setFormSpecialties(member.specialties.join(', '));
+      setFormAvatarUrl(member.avatarUrl || '');
     } else {
       setEditingMember(null);
       setFormName('');
       setFormRole('professional');
       setFormPhone('');
       setFormSpecialties('');
+      setFormAvatarUrl('');
     }
     setIsModalOpen(true);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormAvatarUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -69,6 +83,7 @@ export const TeamManager: React.FC = () => {
     if (!formName.trim()) return;
 
     const specsArray = formSpecialties.split(',').map(s => s.trim()).filter(Boolean);
+    const cleanedAvatarUrl = formAvatarUrl.trim();
 
     let updatedTeam: ProfessionalTeamMember[];
     
@@ -78,7 +93,8 @@ export const TeamManager: React.FC = () => {
         name: formName,
         role: formRole,
         phone: formPhone,
-        specialties: specsArray
+        specialties: specsArray,
+        avatarUrl: cleanedAvatarUrl || undefined
       } : m);
     } else {
       const newMember: ProfessionalTeamMember = {
@@ -87,6 +103,7 @@ export const TeamManager: React.FC = () => {
         role: formRole,
         phone: formPhone,
         specialties: specsArray,
+        avatarUrl: cleanedAvatarUrl || undefined,
         isActive: true,
         joinedAt: new Date().toISOString()
       };
@@ -154,7 +171,7 @@ export const TeamManager: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-800 shrink-0 border border-slate-700/50 flex items-center justify-center relative">
                     {member.avatarUrl ? (
-                      <img src={member.avatarUrl} alt={member.name} className="w-full h-full object-cover" />
+                      <img src={member.avatarUrl} alt={member.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     ) : (
                       <UserIcon className="w-6 h-6 text-slate-400" />
                     )}
@@ -235,6 +252,20 @@ export const TeamManager: React.FC = () => {
             
             <form onSubmit={handleSave} className="p-4 space-y-4">
               
+              <div className="flex flex-col items-center justify-center gap-4 mb-4">
+                <div className="w-20 h-20 rounded-full bg-slate-800 shrink-0 border border-slate-700/50 flex items-center justify-center relative overflow-hidden">
+                  {formAvatarUrl ? (
+                    <img src={formAvatarUrl} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <UserIcon className="w-8 h-8 text-slate-500" />
+                  )}
+                </div>
+                <label className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider rounded cursor-pointer transition">
+                  Selecionar Foto
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                </label>
+              </div>
+
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   Nome do Profissional

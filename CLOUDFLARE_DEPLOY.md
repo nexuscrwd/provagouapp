@@ -46,3 +46,19 @@ Em **Configurações (Settings)** > **Variáveis de ambiente (Environment variab
 
 ## ✅ Pronto!
 Com o cache limpo e a variável `NODE_VERSION=20`, o Cloudflare rodará com `npm install` limpo e concluirá o build com sucesso.
+
+---
+
+## ⚠️ Erro Específico: `npm error npm ci can only install packages...` (Falha de Binários)
+
+### O Problema:
+Ao utilizar ferramentas de compilação nativas (como TailwindCSS v4 com `@tailwindcss/oxide` ou `esbuild`), o Cloudflare Pages cancela o build imediatamente lançando erros como:
+> `npm error npm ci can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync.`
+> `npm error Missing: @tailwindcss/oxide-darwin-arm64... from lock file`
+
+Isso ocorre porque o arquivo `package-lock.json` gerado em um sistema específico (ex: servidor Linux) pode omitir os binários opcionais requeridos por outros sistemas. O Cloudflare, por padrão, tenta executar o comando estrito `npm ci` (Clean Install), que exige uma sincronia de 100% dos pacotes opcionais no lockfile. Ao notar a ausência desses binários, ele aborta a implantação.
+
+### A Solução Definitiva:
+1. **Apague os arquivos de Lock:** Exclua os arquivos `package-lock.json` e `bun.lock` do diretório raiz do seu projeto local.
+2. **Faça um novo commit:** Faça o `commit` e o `push` dessa exclusão para o seu repositório no GitHub.
+3. **Novo Comportamento Automático:** Sem encontrar o arquivo `package-lock.json` no repositório, o Cloudflare **NÃO** executará o rigoroso `npm ci`. Em vez disso, ele fará um **`npm install` padrão**, resolvendo e baixando dinamicamente apenas as dependências e binários ideais para a infraestrutura dele no momento do build. A etapa de instalação e build passará perfeitamente!

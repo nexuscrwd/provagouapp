@@ -15,6 +15,20 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Adição de Foto de Perfil na Gestão de Equipe
+- **Tipo:** `[Feat / UX / Admin]`
+- **Motivo / Solicitação:** Necessidade de permitir a inclusão da foto do profissional durante seu cadastro no painel gerencial, para que apareça publicamente no Seletor da Vitrine (Passo 1).
+- **Arquivos Impactados:**
+  - `src/components/professional/TeamManager.tsx`: Adicionado o estado `formAvatarUrl` e o campo de input "URL da Foto (Opcional)" no modal de cadastro/edição de membros da equipe. Adicionado o atributo `referrerPolicy` na tag de imagem.
+- **Resultado:** Os gestores agora conseguem colar URLs diretas com as fotos dos seus especialistas, e o sistema reflete essas imagens automaticamente no App e no Portal Público do Cliente.
+
+### [2026-09-17] — Documentação de Resolução de Erro de Build (Cloudflare)
+- **Tipo:** `[Docs / DevOps]`
+- **Motivo / Solicitação:** Adicionar à base de conhecimento a solução definitiva para falhas de implantação no Cloudflare causadas por dessincronização de pacotes opcionais e binários nativos no ambiente (erro de `npm ci`).
+- **Arquivos Impactados:**
+  - `CLOUDFLARE_DEPLOY.md`: Adicionada seção explicitando o problema de `package-lock.json` omitindo pacotes cruzados (`@tailwindcss/oxide`, `@esbuild`) e a solução baseada em remover os arquivos de lock (forçando o Cloudflare a usar `npm install` sem checagem severa de pacotes cruzados).
+- **Resultado:** Maior facilidade na correção de problemas futuros de devops com infraestrutura no Cloudflare Pages e Github.
+
 ### [2026-09-17] — Passo 1: Seleção Pública de Profissional na Vitrine
 - **Tipo:** `[Feat / UX / Client]`
 - **Motivo / Solicitação:** Adaptação da visão pública do portal do cliente para incluir um seletor visual de profissionais antes da escolha do serviço ("Passo 1").
