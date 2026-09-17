@@ -8,15 +8,6 @@ import { useTheme } from '../../context/ThemeContext';
 import { SalonAdminSettings, SalonProfessionalItem } from '../../types';
 import { hapticSuccess, hapticLight } from '../../utils/haptics';
 
-// Definição dos presets de cores
-const COLOR_PRESETS = [
-  { name: 'emerald', class: 'bg-emerald-500', shadow: 'shadow-emerald-500/50' },
-  { name: 'blue', class: 'bg-blue-500', shadow: 'shadow-blue-500/50' },
-  { name: 'rose', class: 'bg-rose-500', shadow: 'shadow-rose-500/50' },
-  { name: 'amber', class: 'bg-amber-500', shadow: 'shadow-amber-500/50' },
-  { name: 'violet', class: 'bg-violet-500', shadow: 'shadow-violet-500/50' },
-];
-
 export interface ProfessionalSpaceManagerProps {
   adminSettings: SalonAdminSettings;
   onUpdateSettings: (settings: Partial<SalonAdminSettings>) => void;
@@ -137,21 +128,17 @@ export const ProfessionalSpaceManager: React.FC<ProfessionalSpaceManagerProps> =
             <h4 className="text-xs font-bold uppercase tracking-wider">Cor de Destaque</h4>
           </div>
           <div className="flex items-center justify-between gap-2">
-            {COLOR_PRESETS.map((color) => (
-                <button
-                  key={color.name}
-                  type="button"
-                  onClick={() => {
-                    setAccentColor(color.name);
-                    setAccentColorContext(color.name);
-                  }}
-                  className={`w-10 h-10 rounded-full transition-all border-2 ${
-                    accentColor === color.name 
-                      ? `border-white scale-110 shadow-lg ${color.shadow}` 
-                      : 'border-transparent opacity-60 hover:opacity-100'
-                  } ${color.class}`}
-                />
-            ))}
+            <input
+              type="color"
+              value={accentColor}
+              onChange={(e) => {
+                const newColor = e.target.value;
+                setAccentColor(newColor);
+                setAccentColorContext(newColor);
+              }}
+              className="w-full h-12 rounded-lg cursor-pointer bg-transparent border-0"
+              style={{ WebkitAppearance: 'none' }}
+            />
           </div>
         </div>
 

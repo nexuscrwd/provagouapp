@@ -1042,7 +1042,7 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
                 }}
                 className={`px-2 py-1 rounded text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                   viewMode === 'ger'
-                    ? 'bg-[#20C933] text-white shadow-xs'
+                    ? 'bg-accent text-white shadow-xs'
                     : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-950'
                 }`}
                 title="Modo Gerenciamento: Dashboard, Serviços, Agenda e Espaço"
@@ -1058,7 +1058,7 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
                 }}
                 className={`px-2 py-1 rounded text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                   viewMode === 'pub'
-                    ? 'bg-[#20C933] text-white shadow-xs'
+                    ? 'bg-accent text-white shadow-xs'
                     : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-950'
                 }`}
                 title="Modo Público: Ver o aplicativo como os clientes veem"

@@ -16,7 +16,7 @@ export const ThemeContext = createContext<ThemeContextType>({
   isDark: true,
   toggleTheme: () => {},
   setTheme: () => {},
-  accentColor: 'emerald',
+  accentColor: '#10b981',
   setAccentColor: () => {},
 });
 
@@ -31,9 +31,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const [accentColor, setAccentColorState] = useState<string>(() => {
       try {
-        return localStorage.getItem('vagou_accent_color') || 'emerald';
+        return localStorage.getItem('vagou_accent_color') || '#10b981';
       } catch {
-        return 'emerald';
+        return '#10b981';
       }
     });
 
@@ -53,6 +53,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     try {
       localStorage.setItem('vagou_accent_color', accentColor);
+      document.documentElement.style.setProperty('--accent-color', accentColor);
     } catch {}
   }, [accentColor]);
 
