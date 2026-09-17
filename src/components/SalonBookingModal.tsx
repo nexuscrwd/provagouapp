@@ -2,23 +2,14 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   X, Calendar, Clock, User, CheckCircle2, ChevronLeft, ChevronRight, 
   Sparkles, Star, Scissors, ArrowLeft, Building2, ChevronDown, AlertCircle,
-  Check
+  Check, Video, Images
 } from 'lucide-react';
-import { ServiceOffer } from '../types';
+import { ServiceOffer, CatalogServiceItem } from '../types';
 import { useTheme } from '../context/ThemeContext';
 import { getAvailableSlotsForDate } from '../utils/bookingSlots';
 import { hapticLight, hapticMedium, hapticSuccess } from '../utils/haptics';
 
-export interface CatalogServiceItem {
-  id: string;
-  title: string;
-  duration: string;
-  price: number;
-  description: string;
-  category: string;
-  image?: string;
-  aspectRatio?: string;
-}
+export type { CatalogServiceItem };
 
 export interface SalonProfessionalItem {
   name: string;
@@ -266,6 +257,17 @@ export const SalonBookingModal: React.FC<SalonBookingModalProps> = ({
 
   // Selected date formatted (DD/MM)
   const [, selMonth, selDay] = selectedDateIso.split('-');
+  // Agrupar serviços por categoria (categoria mestre e serviços como subcategorias)
+  const groupedServices = useMemo(() => {
+    const groups: Record<string, CatalogServiceItem[]> = {};
+    services.forEach((srv) => {
+      const cat = srv.category?.trim() || 'Geral';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(srv);
+    });
+    return groups;
+  }, [services]);
+
   const shortDateFormatted = `${selDay}/${selMonth}`;
 
   const activeProfObj = professionals.find((p) => p.name === selectedProfessional);
@@ -416,82 +418,108 @@ export const SalonBookingModal: React.FC<SalonBookingModalProps> = ({
           {/* ============================================================ */}
           {currentStep === 'service' && (
             <div className="space-y-3 animate-in fade-in duration-200">
-              {/* Lista Moderna de Serviços (Cards Independentes & Acolhedores) */}
-              <div className="space-y-2">
-                {services.map((srv) => {
-                  const isSelected = selectedServices.some((s) => s.id === srv.id);
-                  return (
-                    <button
-                      key={srv.id}
-                      type="button"
-                      onClick={() => {
-                        toggleServiceSelection(srv);
-                      }}
-                      className={`w-full p-3 rounded transition-all flex items-center justify-between gap-3 text-left cursor-pointer border ${
-                        isSelected
-                          ? isDark
-                            ? 'bg-emerald-500/10 border-emerald-500/50 text-white shadow-xs'
-                            : 'bg-emerald-50/80 border-emerald-500/50 text-slate-900 shadow-xs'
-                          : isDark
-                          ? 'bg-slate-900/60 hover:bg-slate-900 border-slate-800 text-slate-200'
-                          : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800 shadow-xs'
-                      }`}
-                    >
-                      {/* Lado Esquerdo: Checkbox suave + Informações do Serviço */}
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 transition-all border ${
-                          isSelected
-                            ? 'bg-emerald-500 border-emerald-500 text-white'
-                            : isDark
-                            ? 'border-slate-700 bg-slate-950'
-                            : 'border-slate-300 bg-white'
-                        }`}>
-                          {isSelected && <Check className="w-3.5 h-3.5 stroke-[3] text-white" />}
-                        </div>
+              {/* Lista de Serviços Agrupados por Categoria (Subcategorias) */}
+              <div className="space-y-4">
+                {(Object.entries(groupedServices) as [string, CatalogServiceItem[]][]).map(([categoryName, catServices]) => (
+                  <div key={categoryName} className="space-y-1.5">
+                    {/* Cabeçalho da Categoria */}
+                    <div className="flex items-center gap-2 px-1 pt-1 pb-0.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-xs" />
+                      <h3 className={`text-[11px] font-black uppercase tracking-wider font-['Poppins'] ${
+                        isDark ? 'text-slate-300' : 'text-slate-700'
+                      }`}>
+                        {categoryName}
+                      </h3>
+                      <span className={`text-[10px] font-semibold ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                        ({catServices.length})
+                      </span>
+                    </div>
 
-                        <div className="min-w-0 flex-1">
-                          <h4 className={`text-xs font-bold leading-snug truncate ${
-                            isSelected 
-                              ? isDark ? 'text-emerald-400' : 'text-emerald-800'
-                              : isDark ? 'text-white' : 'text-slate-900'
-                          }`}>
-                            {srv.title}
-                          </h4>
-
-                          <div className="flex items-center gap-2 mt-1 text-[10px]">
-                            {srv.category && (
-                              <span className={`font-medium truncate ${
-                                isDark ? 'text-slate-400' : 'text-slate-500'
+                    {/* Subcategorias / Serviços */}
+                    <div className="space-y-2">
+                      {catServices.map((srv) => {
+                        const isSelected = selectedServices.some((s) => s.id === srv.id);
+                        const isVideoMode = (srv.displayMode === 'video' || srv.mediaType === 'video') && !!srv.videoUrl;
+                        const isSlideshowMode = srv.displayMode === 'slideshow' && !!(srv.photos && srv.photos.length > 1);
+                        return (
+                          <button
+                            key={srv.id}
+                            type="button"
+                            onClick={() => {
+                              toggleServiceSelection(srv);
+                            }}
+                            className={`w-full p-2.5 rounded transition-all flex items-center justify-between gap-3 text-left cursor-pointer border ${
+                              isSelected
+                                ? isDark
+                                  ? 'bg-emerald-500/10 border-emerald-500/50 text-white shadow-xs'
+                                  : 'bg-emerald-50/80 border-emerald-500/50 text-slate-900 shadow-xs'
+                                : isDark
+                                ? 'bg-slate-900/60 hover:bg-slate-900 border-slate-800 text-slate-200'
+                                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800 shadow-xs'
+                            }`}
+                          >
+                            {/* Lado Esquerdo: Checkbox suave + Informações do Serviço */}
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 transition-all border ${
+                                isSelected
+                                  ? 'bg-emerald-500 border-emerald-500 text-white'
+                                  : isDark
+                                  ? 'border-slate-700 bg-slate-950'
+                                  : 'border-slate-300 bg-white'
                               }`}>
-                                {srv.category}
-                              </span>
-                            )}
-                            {srv.category && (
-                              <span className={isDark ? 'text-slate-600' : 'text-slate-300'}>•</span>
-                            )}
-                            <span className={`inline-flex items-center gap-1 font-medium ${
-                              isDark ? 'text-slate-400' : 'text-slate-500'
-                            }`}>
-                              <Clock className="w-3 h-3 text-emerald-400" />
-                              <span>{srv.duration}</span>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                                {isSelected && <Check className="w-3.5 h-3.5 stroke-[3] text-white" />}
+                              </div>
 
-                      {/* Lado Direito: Valor em Destaque */}
-                      <div className="shrink-0 text-right">
-                        <span className={`text-sm font-extrabold ${
-                          isSelected
-                            ? isDark ? 'text-emerald-400' : 'text-emerald-700'
-                            : isDark ? 'text-slate-100' : 'text-slate-900'
-                        }`}>
-                          R$ {srv.price.toFixed(0)}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <h4 className={`text-xs font-bold leading-snug truncate ${
+                                    isSelected 
+                                      ? isDark ? 'text-emerald-400' : 'text-emerald-800'
+                                      : isDark ? 'text-white' : 'text-slate-900'
+                                  }`}>
+                                    {srv.title}
+                                  </h4>
+                                  {isVideoMode && (
+                                    <span className="shrink-0 px-1 py-0.2 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[8px] font-black uppercase flex items-center gap-0.5">
+                                      <Video className="w-2.5 h-2.5 text-emerald-400" />
+                                      <span>5s</span>
+                                    </span>
+                                  )}
+                                  {isSlideshowMode && (
+                                    <span className="shrink-0 px-1 py-0.2 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[8px] font-black uppercase flex items-center gap-0.5">
+                                      <Images className="w-2.5 h-2.5 text-emerald-400" />
+                                      <span>Slide</span>
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2 mt-1 text-[10px]">
+                                  <span className={`inline-flex items-center gap-1 font-medium ${
+                                    isDark ? 'text-slate-400' : 'text-slate-500'
+                                  }`}>
+                                    <Clock className="w-3 h-3 text-emerald-400" />
+                                    <span>{srv.duration}</span>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Lado Direito: Valor em Destaque */}
+                            <div className="shrink-0 text-right">
+                              <span className={`text-sm font-extrabold ${
+                                isSelected
+                                  ? isDark ? 'text-emerald-400' : 'text-emerald-700'
+                                  : isDark ? 'text-slate-100' : 'text-slate-900'
+                              }`}>
+                                R$ {srv.price.toFixed(0)}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

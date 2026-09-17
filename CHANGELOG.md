@@ -15,6 +15,140 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Prévia ao Vivo do Anúncio (Modo Público / Portal VagouApp)
+- **Tipo:** `[Feat / UI/UX / Real-Time Live Preview]`
+- **Motivo:** O profissional solicitou a capacidade de visualizar uma prévia em tempo real de como seu anúncio de serviço será exibido para clientes na seção de serviços do app em modo público e no portal VagouApp, contemplando os 3 modos de exibição (Foto Estática, Slide de Fotos com crossfade rotativo e Vídeo demonstrativo de 5 segundos).
+- **Arquivos Impactados:**
+  - `src/components/professional/ServicePublicAdPreview.tsx`:
+    - Criado componente dedicado em alta fidelidade reproduzindo com precisão matemática o card de serviço público da vitrine e do portal.
+    - Suporte dinâmico aos modos:
+      - **Foto Estática:** Imagem com gradiente cinematográfico escuro e badge de categoria com ponto esmeralda.
+      - **Slide de Fotos:** Rotação automática suave com crossfade e micro-indicadores pontilhados.
+      - **Vídeo (5s):** Reprodução contínua em loop silencioso (`autoPlay loop muted playsInline`) com badge `5s`.
+      - Exibição de categoria, badge de mídia, título do serviço em tipografia Poppins e preço destacado em `text-emerald-400 font-black`.
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - **No formulário de cadastro/edição:** Adicionada a seção "Prévia do Anúncio (Portal & App)" com badge "Ao Vivo" logo abaixo da seleção de mídias, atualizando instantaneamente conforme o profissional altera nome, categoria, preço, fotos ou vídeo.
+    - **Na listagem de serviços cadastrados:** Adicionado botão de ação rápida de visualização (`Eye`) com ícone esmeralda ao lado de Editar e Excluir.
+    - **Modal dedicado de visualização:** Ao tocar no botão de olho na lista, abre o modal de prévia exibindo o card em tamanho real, descrição completa do procedimento e botão de atalho para editar.
+- **Resultado:**
+  - O profissional tem clareza visual total sobre o impacto visual de seu anúncio antes de publicar ou editar.
+  - Zero "caixa dentro de caixa", design plano, mobile-first e 100% aderente ao design system do Vagou.
+
+### [2026-09-17] — Unificação dos Botões de Mídia: "Biblioteca", "Do dispositivo" e "Capturar"
+- **Tipo:** `[UI/UX / Mobile Synthesis / Refactor]`
+- **Motivo:** O usuário solicitou converter o botão isolado de "Abrir Biblioteca" e unificá-lo diretamente com os botões de captura e envio de arquivo, organizando as 3 opções em uma barra/grade única e coesa na ordem solicitada: "Biblioteca", "Do dispositivo" e "Capturar".
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Reestruturada a barra de ações de mídia em grid de 3 colunas (`grid grid-cols-3 gap-1.5`) para os 3 modos de anúncio (**Foto Única**, **Slide de Fotos** e **Vídeo 5s**).
+    - **Botão 1 ("Biblioteca"):** Ícone contextual (`ImageIcon` / `Images` / `Film`), aciona a abertura do modal da biblioteca de mídias salvas categorizadas.
+    - **Botão 2 ("Do dispositivo"):** Ícone de `Upload`, aciona o seletor de arquivos local do smartphone/dispositivo.
+    - **Botão 3 ("Capturar"):** Destaque em verde esmeralda com ícone e texto brancos (`bg-emerald-500 text-white`), aciona a câmera na hora para foto ou vídeo com salvamento automático na categoria selecionada.
+    - O preview da foto ativa, do carrossel de fotos ou do vídeo agora fica posicionado de forma limpa logo abaixo do trio de ações.
+- **Resultado:**
+  - Eliminação de botões soltos ou dispersos pelo modal; interface 100% simétrica, compacta e ergonômica para telas mobile.
+
+### [2026-09-17] — Biblioteca de Mídias Salvas em Modal Sob Demanda (Limpeza do Formulário de Serviço)
+- **Tipo:** `[Refactor / UI/UX / Modal Architecture]`
+- **Motivo:** O usuário solicitou que a biblioteca de mídias salvas não ficasse expandida diretamente dentro do formulário de serviço, e sim que se abra em formato de modal apenas quando o profissional for selecionar a mídia.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Adicionado estado `isMediaLibraryModalOpen` e modal dedicado em camada superior (`z-[60]`).
+    - Substituída a exibição inline das galerias nos três modos (Foto Única, Slide de Fotos e Vídeo 5s) por botões objetivos com chevron e indicadores de estado (ex: "Abrir Biblioteca", "X/5 no slide").
+    - Criado o **Modal 3: Biblioteca de Mídias Salvas**:
+      - Cabeçalho contextual dinâmico conforme o modo ativo (Foto de Capa, Slide até 5 fotos ou Vídeo demonstrativo de 5s).
+      - Filtro horizontal de categorias com tags interativas.
+      - Ações rápidas no topo para captura na hora via câmera ou upload do aparelho.
+      - Seleção de Foto Única com 1 toque que confirma e fecha o modal automaticamente.
+      - Seleção de Slide permitindo marcar/desmarcar até 5 fotos com numeração ordinal de capa e botão fixo de confirmação no rodapé (`bg-[#20C933] text-white`).
+      - Seleção de Vídeo com cards de preview, duração e seleção imediata.
+- **Resultado:**
+  - Formulário de serviços muito mais enxuto, ágil e visualmente limpo no mobile, sem rolagem excessiva de thumbnails dentro do formulário principal.
+
+### [2026-09-17] — Reordenação Lógica do Formulário de Serviço: Categoria Mestre Acima da Subcategoria (Serviço)
+- **Tipo:** `[Refactor / UX Logic]`
+- **Motivo:** Ajuste na ordem lógica dos campos no formulário de cadastro/edição de serviços conforme apontado pelo usuário, posicionando a seleção da "Categoria Mestre" no topo do modal (antes do "Nome do Serviço / Subcategoria").
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Movido o bloco de Categoria Mestre (com o botão de "+ Nova Categoria" e as tags de seleção) para o primeiro lugar no formulário, imediatamente acima do Nome do Serviço (Subcategoria), seguido de Preço/Duração, Descrição e Mídias.
+- **Resultado:**
+  - Fluxo de preenchimento muito mais natural: o profissional primeiro escolhe a categoria-mãe (ex: Cabelo) e em seguida define a subcategoria/serviço específico (ex: Corte Degradê).
+
+### [2026-09-17] — Refatoração da Gestão de Mídias dos Serviços: Separação de Biblioteca Salva e Câmera/Upload na Hora
+- **Tipo:** `[Refactor / UI/UX / Mobile Experience]`
+- **Motivo:** O usuário solicitou esclarecer a seção de mídia dos serviços que estava confusa, dividindo explicitamente a "Biblioteca de Imagens/Vídeos Salvos" da opção de "Upload do dispositivo ou Câmera (tirar na hora)", com salvamento automático na categoria selecionada. Para foto única, um toque define a imagem; para slide, seleção de até 5 imagens com ordenação; para vídeo, o mesmo fluxo consistente.
+- **Arquivos Impactados:**
+  - `metadata.json`:
+    - Adicionada permissão `"camera"` ao array `requestFramePermissions` para suporte nativo a captura de foto e gravação de vídeo na hora no navegador.
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Criada a interface `SavedMediaItem` e repositório local persistente (`vagou_saved_media_library_v3`) para a biblioteca de mídias categorizadas.
+    - Implementada função de captura direta via câmera (`capture="environment"`) e upload de arquivos para imagens e vídeos.
+    - Otimização automática de imagens via Canvas (máx. 1200px) e extração de duração de vídeos para garantir fluidez e prevenção de travamento de memória.
+    - Separação clara de UI para os 3 Modos:
+      - **Foto Única:** Botões de ação rápida (Tirar Foto na Hora / Enviar do Aparelho), preview da foto ativa e grid da biblioteca com filtro por categoria onde 1 toque seleciona a imagem.
+      - **Slide de Fotos:** Ação rápida para captura/upload (adiciona ao slide e salva na biblioteca), carrossel das fotos do slide (ordem 1 Capa até 5 com remoção individual) e grid da biblioteca permitindo selecionar/desmarcar até 5 fotos.
+      - **Vídeo 5s:** Gravação na hora ou upload do aparelho, player de preview com loop contínuo e grid da biblioteca de vídeos salvos categorizados com duração e reprodução.
+- **Resultado:**
+  - Interface intuitiva, limpa e ágil no celular, sem poluição visual, com respeito estrito às regras de contraste (fundo verde = texto branco) e sem componentes aninhados redundantes.
+
+### [2026-09-17] — Suporte a até 5 Fotos, 1 Vídeo e Seletor do Modo de Publicação do Anúncio (Foto Estática, Slide ou Vídeo 5s)
+- **Tipo:** `[Feat / UI/UX / Innovation / Database Docs]`
+- **Motivo:** Permitir que o profissional envie até 5 fotos e 1 vídeo para cada serviço cadastrado, escolhendo flexivelmente como o anúncio será apresentado ao cliente: foto estática em alta resolução, slide/carrossel automático rotativo das fotos ou vídeo de 5s em loop contínuo.
+- **Arquivos Impactados:**
+  - `src/types.ts`:
+    - Adicionados campos `photos?: string[]` (galeria de até 5 fotos) e `displayMode?: 'static' | 'slideshow' | 'video'` à interface `CatalogServiceItem`.
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Implementado seletor visual em 3 opções para o Modo de Exibição do Anúncio: Foto Única, Slide de Fotos e Vídeo 5s.
+    - Criada a seção de Galeria de Fotos com suporte a até 5 imagens, upload via clique ou Drag & Drop, indicador de capa na 1ª foto, remoção individual e seleção rápida da biblioteca.
+    - Seção de Vídeo com upload de 1 vídeo (até 5s) e biblioteca de vídeos curtos prontos.
+    - Exibição em cards com badges visuais dinâmicos (`Foto`, `Slide (N fotos)` ou `Vídeo 5s`).
+  - `src/components/SalonProfileView.tsx`:
+    - Criado o componente `ServiceCardMedia` com reprodução contínua de vídeos de 5s, transição automática e suave (a cada 2.8s) com indicadores de pontinhos para serviços em modo slideshow, e renderização de foto estática.
+    - Adicionado suporte a badges de mídia no topo do card (`5s` ou `Slide`).
+    - Exemplos pré-configurados no catálogo inicial demonstrando os três modos em ação.
+  - `src/components/SalonBookingModal.tsx`:
+    - Adicionados badges informativos de mídia (`5s` e `Slide`) na listagem de serviços do fluxo de agendamento.
+  - `ECOSYSTEM_CONTRACT.md`:
+    - Atualizada a especificação da tabela `catalog_services` com as colunas `display_mode: VARCHAR(20)` e `photos: TEXT[]`.
+- **Resultado:**
+  - Máxima flexibilidade para o profissional personalizar o apelo visual de seus anúncios no catálogo, mantendo navegação fluida, síntese mobile e contraste estrito.
+
+### [2026-09-17] — Categorias Dinâmicas com Serviços como Subcategorias e Suporte a Fotos/Vídeos de 5s
+- **Tipo:** `[Feat / UX / Database Docs / Ecosystem]`
+- **Motivo:** Permitir que profissionais ou administradores criem suas próprias categorias de serviços (onde cada serviço passa a atuar como subcategoria desse grupo mestre) e dar suporte completo a envio de foto ou vídeo curto de até 5 segundos com loop automático nos serviços, além de atualizar a documentação do banco de dados compartilhado.
+- **Arquivos Impactados:**
+  - `src/types.ts`:
+    - Adicionada interface `ServiceCategoryItem` para modelagem de categorias.
+    - Expandida `CatalogServiceItem` com `mediaType?: 'image' | 'video'`, `videoUrl?: string` e `videoDurationSeconds?: number`.
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Adicionado modal e fluxo para criar novas categorias mestres dinâmicas com persistência em `localStorage` (`vagou_custom_service_categories`).
+    - Organizada a visualização em grupos pai (categorias) com serviços dispostos como subcategorias.
+    - Implementado seletor de mídia (Foto ou Vídeo 5s) com suporte a Drag & Drop e upload local, inspeção de duração e alerta inteligente para vídeos acima de 5 segundos.
+    - Adicionada galeria rápida de vídeos de 5s pré-configurados de alta qualidade.
+  - `src/components/SalonBookingModal.tsx`:
+    - Agrupamento de serviços por categoria com cabeçalhos visuais e identificação de subcategorias.
+    - Indicador de badge de vídeo de 5s para serviços com demonstração dinâmica.
+  - `src/components/SalonProfileView.tsx`:
+    - Suporte à reprodução contínua de vídeos de 5s nos cards de serviços do catálogo com badge `5s` e ícone `Video`.
+    - Amostras de vídeos de 5s adicionadas aos serviços de demonstração.
+  - `ECOSYSTEM_CONTRACT.md`:
+    - Documentadas as tabelas `service_categories` e `catalog_services` no Dicionário de Dados Compartilhado com tipagem Postgres/Supabase, chave estrangeira de salão, campos de vídeo de 5s e relação mestre-subcategoria.
+- **Resultado:**
+  - Experiência completa de categorização customizada e suporte a mídia imersiva (vídeo de 5s) tanto na edição do profissional quanto na visualização do cliente e no agendamento, com conformidade total às diretrizes de UI/UX e contraste.
+
+### [2026-09-17] — Correção do Erro em Tempo de Execução: `onLogin is not a function`
+- **Tipo:** `[Bugfix / Reliability]`
+- **Motivo:** O modal de autenticação do profissional (`ProfessionalLoginModal`) gerava uma exceção não tratada (`TypeError: onLogin is not a function`) ao submeter o PIN numérico quando a propriedade `onLogin` não era explicitamente passada ou diferia do padrão `onSuccess`.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalLoginModal.tsx`:
+    - Tornou `onLogin?: (pin: string) => boolean` opcional na interface `ProfessionalLoginModalProps`.
+    - Adicionou suporte a `onSuccess?: () => void`, `savedPin?: string` e `salonName?: string`.
+    - Implementou fallback seguro no envio: caso `onLogin` seja fornecido como função, ele é executado; caso contrário, valida o PIN contra `savedPin || '1234'` e dispara `onSuccess()`.
+    - Atualizou as dicas de PIN e o cabeçalho para exibir dinamicamente o PIN configurado e o nome do salão.
+  - `src/components/SalonProfileView.tsx`:
+    - Passou explicitamente `onLogin={handleSalonLogin}` para garantir dupla compatibilidade na chamada do modal.
+- **Resultado:**
+  - Login de profissional opera com total estabilidade tanto pelo botão de acesso rápido do cabeçalho quanto pela gaveta de perfil, com compilação e tipagem 100% verificadas.
+
 ### [2026-09-17] — Sincronização e Restauração Completa a partir do Repositório Oficial GitHub (meunegocio.vagouapp)
 - **Tipo:** `[Sync / Full Project Restore / Clean Architecture]`
 - **Motivo:** Restauração total da versão mais recente do código-fonte a partir do repositório oficial `https://github.com/nexuscrwd/meunegocio.vagouapp.git`, conforme solicitação do usuário.

@@ -133,6 +133,38 @@ No **App Empresário**, as cores e a marca são injetadas no momento do login at
 | `slot_minutes` | `INT` | Duração padrão de cada atendimento (ex: 45) |
 | `is_active` | `BOOLEAN` | Ativo na equipe |
 
+### Tabela: `service_categories` (Categorias Mestres de Serviços)
+> **Hierarquia:** As categorias funcionam como grupos pai criados pelo salão/profissional ou predefinidos pela plataforma. Os serviços cadastrados operam como subcategorias desse grupo.
+
+| Coluna | Tipo | Descrição |
+| :--- | :--- | :--- |
+| `id` | `UUID` (PK) | Identificador da categoria |
+| `salon_id` | `UUID` (FK -> salons.id) | Salão proprietário (ou `NULL` para categorias globais) |
+| `name` | `VARCHAR(60)` | Nome da categoria mestre (ex: `Cabelo`, `Barba`, `Unhas`, `Estética`) |
+| `sort_order` | `INT` | Ordem de exibição no catálogo e no carrossel |
+| `is_active` | `BOOLEAN` | Categoria ativa no catálogo (`true`/`false`) |
+
+### Tabela: `catalog_services` (Serviços e Subcategorias do Catálogo)
+> **Mídia e Publicação:** Suporta galeria de até 5 fotos em alta resolução e 1 vídeo curto de até 5 segundos em loop, permitindo ao profissional escolher o modo de publicação do anúncio: `'static'` (foto estática), `'slideshow'` (slide/carrossel rotativo das fotos) ou `'video'` (vídeo 5s em loop contínuo).
+
+| Coluna | Tipo | Descrição |
+| :--- | :--- | :--- |
+| `id` | `UUID` (PK) | Identificador do serviço |
+| `salon_id` | `UUID` (FK -> salons.id) | Salão ao qual pertence |
+| `category_id` | `UUID` (FK -> service_categories.id) | Categoria mestre associada |
+| `category_name`| `VARCHAR(60)` | Nome denormalizado da categoria para queries rápidas |
+| `title` | `VARCHAR(100)` | Nome da subcategoria/serviço (ex: `Corte Degradê na Tesoura`) |
+| `description` | `TEXT` | Detalhes do serviço, produtos ou benefícios |
+| `price` | `NUMERIC(10,2)`| Preço base em Reais (R$) |
+| `duration` | `VARCHAR(20)` | Duração estimada (ex: `40 min`, `1h`) |
+| `display_mode` | `VARCHAR(20)` | Modo de exibição: `'static'`, `'slideshow'` ou `'video'` |
+| `photos` | `TEXT[]` | Galeria de até 5 fotos do serviço (1ª foto é a capa) |
+| `image_url` | `TEXT` | URL da foto principal (fallback de capa) |
+| `media_type` | `VARCHAR(10)` | Tipo de mídia principal: `'image'` ou `'video'` |
+| `video_url` | `TEXT` | URL do vídeo de até 5s em loop (MP4/WebM) |
+| `video_duration_seconds` | `NUMERIC(3,1)` | Duração exata do vídeo (teto recomendado: 5.0 segundos) |
+| `is_active` | `BOOLEAN` | Serviço disponível para agendamento |
+
 ### Tabela: `service_offers` (Vagas do Radar)
 | Coluna | Tipo | Descrição |
 | :--- | :--- | :--- |
