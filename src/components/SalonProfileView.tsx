@@ -6,12 +6,11 @@ import {
   Check, MessageCircle,
   Scissors, Hand, Smile, Eye, Sparkles, LayoutDashboard,
   Store, Car, MapPin, Clock, Users, Wifi, Coffee, Wind,
-  KeyRound, LogOut, ShieldCheck, Video, Images
+  KeyRound, LogOut, ShieldCheck, Video, Images, EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ServiceOffer, BookingAppointment, SalonAdminSettings } from '../types';
 import { SalonBookingModal, CatalogServiceItem, SalonProfessionalItem } from './SalonBookingModal';
-import { SalonAdminModal } from './SalonAdminModal';
 import { ProfessionalDashboardView } from './professional/ProfessionalDashboardView';
 import { ProfessionalServicesManager } from './professional/ProfessionalServicesManager';
 import { ProfessionalAgendaView } from './professional/ProfessionalAgendaView';
@@ -454,7 +453,11 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
     }
   });
 
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState<boolean>(false);
+  // Modo de visualização quando logado: 'ger' (Gerenciamento) ou 'pub' (Público / Visão do Cliente)
+  const [viewMode, setViewMode] = useState<'ger' | 'pub'>('ger');
+
+  // Modo ativo efetivo
+  const isGerMode = isSalonLoggedIn && viewMode === 'ger';
 
   // Configurações do Salão editáveis pelo gestor
   const [adminSettings, setAdminSettings] = useState<SalonAdminSettings>(() => {
@@ -565,6 +568,7 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
     let validPin = adminSettings.pinCode || '1234';
     if (pin.trim() === validPin.trim()) {
       setIsSalonLoggedIn(true);
+      setViewMode('ger');
       try {
         localStorage.setItem('vagou_salon_logged_in', 'true');
       } catch {
@@ -577,7 +581,7 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
 
   const handleSalonLogout = () => {
     setIsSalonLoggedIn(false);
-    setIsAdminModalOpen(false);
+    setViewMode('pub');
     try {
       localStorage.removeItem('vagou_salon_logged_in');
     } catch {
@@ -751,9 +755,13 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
     return Sparkles;
   }, [primaryOffer, salonName, salonOffers, offers]);
 
-  // Navegação direta com scroll-snap para as seções da landing page
+  // Navegação direta: no modo público rola para a seção; no modo gerenciamento alterna a aba diretamente
   const handleSelectTab = useCallback((tab: 'home' | 'servicos' | 'vagas' | 'espaco') => {
     setActiveTab(tab);
+    if (isGerMode) {
+      // No modo gerenciamento, a navegação é exclusivamente por botões (troca direta de estado)
+      return;
+    }
     isProgrammaticScroll.current = true;
     const targetMap: Record<'home' | 'servicos' | 'vagas' | 'espaco', HTMLElement | null> = {
       home: homeSectionRef.current,
@@ -771,10 +779,11 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
     setTimeout(() => {
       isProgrammaticScroll.current = false;
     }, 600);
-  }, []);
+  }, [isGerMode]);
 
-  // Observer para sincronizar a aba ativa do rodapé ao deslizar o dedo pelas seções da landing page
+  // Observer para sincronizar a aba ativa do rodapé ao deslizar o dedo pelas seções da landing page (somente no modo público)
   useEffect(() => {
+    if (isGerMode) return; // No modo gerenciamento, o efeito landing page e o scroll snap estão desativados
     const container = scrollContainerRef.current;
     if (!container) return;
 
@@ -808,7 +817,7 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [isGerMode]);
 
   // Catálogo completo de serviços conectado ao estado dinâmico gerenciável
   const catalogServices: CatalogServiceItem[] = catalogServicesList;
@@ -964,24 +973,44 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
           </span>
         </div>
 
-        {/* Lado Direito: Modo Profissional / Admin + Favoritar + Notificação + Foto do Usuário */}
+        {/* Lado Direito: Modo Profissional (Seletor Ger. / Púb. quando logado, ou Botão PRO) + Favoritar + Notificação + Foto do Usuário */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Botão de Acesso ao Painel Administrativo ou Login Profissional */}
+          {/* Seletor Ger. / Púb. quando Logado ou Botão de Acesso PRO */}
           {isSalonLoggedIn ? (
-            <div className="flex items-center gap-1.5">
+            <div className={`flex items-center p-0.5 rounded border ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-300 shadow-xs'
+            }`}>
               <button
                 type="button"
                 onClick={() => {
                   hapticLight();
-                  setIsAdminModalOpen(true);
+                  setViewMode('ger');
                 }}
-                className="h-9 sm:h-10 px-2.5 sm:px-3 rounded flex items-center gap-1.5 font-bold text-xs bg-[#20C933] hover:bg-[#1bb32d] active:scale-95 text-white transition shadow-sm cursor-pointer whitespace-nowrap animate-in fade-in"
-                title="Configurações Administrativas do Salão"
-                aria-label="Abrir Configurações do Salão"
+                className={`px-2 py-1 rounded text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                  viewMode === 'ger'
+                    ? 'bg-[#20C933] text-white shadow-xs'
+                    : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-950'
+                }`}
+                title="Modo Gerenciamento: Dashboard, Serviços, Agenda e Espaço"
+                aria-label="Ativar Modo Gerenciamento"
               >
-                <LayoutDashboard className="w-4 h-4 stroke-[2.5]" />
-                <span className="hidden xs:inline uppercase tracking-wider text-[11px] font-bold">Painel</span>
-                <span className="px-1 py-0.2 rounded text-[9px] bg-emerald-800 text-white font-black">PRO</span>
+                Ger.
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  hapticLight();
+                  setViewMode('pub');
+                }}
+                className={`px-2 py-1 rounded text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                  viewMode === 'pub'
+                    ? 'bg-[#20C933] text-white shadow-xs'
+                    : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-950'
+                }`}
+                title="Modo Público: Ver o aplicativo como os clientes veem"
+                aria-label="Ativar Modo Público"
+              >
+                Púb.
               </button>
             </div>
           ) : (
@@ -1000,7 +1029,7 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
               aria-label="Login Profissional"
             >
               <KeyRound className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <span className="hidden sm:inline text-[11px] font-semibold">Sou Profissional</span>
+              <span className="font-extrabold text-[11px] uppercase tracking-wider text-emerald-500">PRO</span>
             </button>
           )}
 
@@ -1056,150 +1085,179 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
         </div>
       </header>
 
-      {/* 2. ÁREA DE CONTEÚDO LANDING PAGE COM SCROLL SNAP NATIVO (ENCAIXE PERFEITO ENTRE SEÇÕES) */}
-      <div 
-        ref={scrollContainerRef}
-        className="flex-1 min-h-0 w-full relative overflow-y-auto snap-y snap-mandatory snap-y-mandatory scroll-smooth no-scrollbar overscroll-y-contain touch-pan-y"
-      >
-        {/* SEÇÃO 1: INÍCIO / DASHBOARD */}
-        <section
-          id="section-home"
-          ref={homeSectionRef}
-          data-tab-id="home"
-          className="w-full h-full min-h-full shrink-0 snap-start snap-always snap-section overflow-hidden flex flex-col justify-between"
+      {/* 2. ÁREA DE CONTEÚDO */}
+      {isGerMode ? (
+        /* MODO GERENCIAMENTO: TELAS DEDICADAS COM NAVEGAÇÃO EXCLUSIVAMENTE POR BOTÕES (SEM EFEITO LANDING PAGE) */
+        <main className="flex-1 min-h-0 w-full relative overflow-hidden flex flex-col">
+          {activeTab === 'home' && (
+            <div className="w-full h-full flex-1 min-h-0 overflow-hidden flex flex-col justify-between animate-in fade-in duration-150">
+              <ProfessionalDashboardView
+                adminSettings={adminSettings}
+                onUpdateSettings={handleUpdateSettings}
+                services={catalogServicesList}
+                appointments={appointmentsList}
+                onNavigateTab={handleSelectTab}
+                onOpenNewService={() => handleSelectTab('servicos')}
+                onOpenNewAppointment={() => handleSelectTab('vagas')}
+                onLogout={handleSalonLogout}
+                salonName={salonInfo.name}
+              />
+            </div>
+          )}
+
+          {activeTab === 'servicos' && (
+            <div className="w-full h-full flex-1 min-h-0 overflow-hidden flex flex-col justify-between animate-in fade-in duration-150">
+              <ProfessionalServicesManager
+                services={catalogServicesList}
+                onUpdateServices={handleUpdateServices}
+              />
+            </div>
+          )}
+
+          {activeTab === 'vagas' && (
+            <div className="w-full h-full flex-1 min-h-0 overflow-hidden flex flex-col justify-start animate-in fade-in duration-150">
+              <ProfessionalAgendaView
+                appointments={appointmentsList}
+                onUpdateAppointments={handleUpdateAppointments}
+                services={catalogServicesList}
+                professionals={professionalsList}
+              />
+            </div>
+          )}
+
+          {activeTab === 'espaco' && (
+            <div className="w-full h-full flex-1 min-h-0 overflow-hidden flex flex-col justify-start animate-in fade-in duration-150">
+              <ProfessionalSpaceManager
+                adminSettings={adminSettings}
+                onUpdateSettings={handleUpdateSettings}
+                professionals={professionalsList}
+                onUpdateProfessionals={handleUpdateProfessionals}
+              />
+            </div>
+          )}
+        </main>
+      ) : (
+        /* MODO PÚBLICO / CLIENTE: LANDING PAGE INTEGRADA COM SCROLL SNAP NATIVO */
+        <div 
+          ref={scrollContainerRef}
+          className="flex-1 min-h-0 w-full relative overflow-y-auto snap-y snap-mandatory snap-y-mandatory scroll-smooth no-scrollbar overscroll-y-contain touch-pan-y"
         >
-          {isSalonLoggedIn ? (
-            <ProfessionalDashboardView
-              adminSettings={adminSettings}
-              onUpdateSettings={handleUpdateSettings}
-              services={catalogServicesList}
-              appointments={appointmentsList}
-              onNavigateTab={handleSelectTab}
-              onOpenNewService={() => handleSelectTab('servicos')}
-              onOpenNewAppointment={() => handleSelectTab('vagas')}
-              onLogout={handleSalonLogout}
-              salonName={salonInfo.name}
-            />
-          ) : (
-            <>
-              {/* SUBCABEÇALHO DE BOAS-VINDAS DENTRO DA SEÇÃO INÍCIO */}
-              <div className={`px-3.5 border-b flex items-center justify-between gap-3 transition-colors h-11 shrink-0 ${
-                isDark ? 'bg-slate-900/80 border-slate-800/80' : 'bg-slate-100/90 border-slate-200'
-              }`}>
-                <div className="flex items-center gap-2.5 min-w-0 py-1">
-                  {onBack && (
-                    <button
-                      onClick={onBack}
-                      className={`w-7 h-7 rounded flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 ${
-                        isDark
-                          ? 'bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white'
-                          : 'bg-white hover:bg-slate-200 border border-slate-200 text-slate-700 hover:text-slate-950 shadow-xs'
-                      }`}
-                      title="Voltar"
-                      aria-label="Voltar"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5 text-emerald-500" />
-                    </button>
-                  )}
+          {/* SEÇÃO 1: INÍCIO */}
+          <section
+            id="section-home"
+            ref={homeSectionRef}
+            data-tab-id="home"
+            className="w-full h-full min-h-full shrink-0 snap-start snap-always snap-section overflow-hidden flex flex-col justify-between"
+          >
+            {/* SUBCABEÇALHO DE BOAS-VINDAS DENTRO DA SEÇÃO INÍCIO */}
+            <div className={`px-3.5 border-b flex items-center justify-between gap-3 transition-colors h-11 shrink-0 ${
+              isDark ? 'bg-slate-900/80 border-slate-800/80' : 'bg-slate-100/90 border-slate-200'
+            }`}>
+              <div className="flex items-center gap-2.5 min-w-0 py-1">
+                {onBack && (
+                  <button
+                    onClick={onBack}
+                    className={`w-7 h-7 rounded flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0 ${
+                      isDark
+                        ? 'bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white'
+                        : 'bg-white hover:bg-slate-200 border border-slate-200 text-slate-700 hover:text-slate-950 shadow-xs'
+                    }`}
+                    title="Voltar"
+                    aria-label="Voltar"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 text-emerald-500" />
+                  </button>
+                )}
 
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
 
-                  <div className="min-w-0">
-                    <h2 className={`text-xs sm:text-sm font-bold truncate leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                      Seja bem-vindo, <span className="text-emerald-500">{currentUserName ? currentUserName.trim().split(' ')[0] : ''}</span>
-                    </h2>
-                  </div>
+                <div className="min-w-0">
+                  <h2 className={`text-xs sm:text-sm font-bold truncate leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Seja bem-vindo, <span className="text-emerald-500">{currentUserName ? currentUserName.trim().split(' ')[0] : ''}</span>
+                  </h2>
                 </div>
               </div>
+            </div>
 
-              {/* SLIDER / CARROSSEL PUBLICITÁRIO TOTALMENTE RESPONSIVO */}
-              <div className={`relative w-full h-full flex-1 min-h-0 overflow-hidden select-none touch-pan-y ${
-                isDark ? 'bg-slate-900 border-b border-slate-800' : 'bg-slate-200 border-b border-slate-300'
-              }`}>
-                <AnimatePresence mode="wait">
-                  {portfolioSlides.map((slide, idx) => {
-                    if (idx !== activeSlideIndex) return null;
-                    return (
-                      <motion.div
-                        key={slide.id}
-                        drag="x"
-                        dragConstraints={{ left: 0, right: 0 }}
-                        dragElastic={0.2}
-                        onDragEnd={(_, info) => {
-                          if (info.offset.x < -40 || info.velocity.x < -300) {
-                            setActiveSlideIndex((prev) => (prev + 1) % portfolioSlides.length);
-                          } else if (info.offset.x > 40 || info.velocity.x > 300) {
-                            setActiveSlideIndex((prev) => (prev - 1 + portfolioSlides.length) % portfolioSlides.length);
-                          }
-                        }}
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.98 }}
-                        transition={{ duration: 0.35, ease: 'easeOut' }}
-                        className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
-                      >
-                        {/* Imagem de Fundo Fullscreen */}
-                        <img
-                          src={slide.image}
-                          alt={slide.title}
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
+            {/* SLIDER / CARROSSEL PUBLICITÁRIO TOTALMENTE RESPONSIVO */}
+            <div className={`relative w-full h-full flex-1 min-h-0 overflow-hidden select-none touch-pan-y ${
+              isDark ? 'bg-slate-900 border-b border-slate-800' : 'bg-slate-200 border-b border-slate-300'
+            }`}>
+              <AnimatePresence mode="wait">
+                {portfolioSlides.map((slide, idx) => {
+                  if (idx !== activeSlideIndex) return null;
+                  return (
+                    <motion.div
+                      key={slide.id}
+                      drag="x"
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.2}
+                      onDragEnd={(_, info) => {
+                        if (info.offset.x < -40 || info.velocity.x < -300) {
+                          setActiveSlideIndex((prev) => (prev + 1) % portfolioSlides.length);
+                        } else if (info.offset.x > 40 || info.velocity.x > 300) {
+                          setActiveSlideIndex((prev) => (prev - 1 + portfolioSlides.length) % portfolioSlides.length);
+                        }
+                      }}
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                      className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
+                    >
+                      {/* Imagem de Fundo Fullscreen */}
+                      <img
+                        src={slide.image}
+                        alt={slide.title}
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
 
-                        {/* Degradês Publicitários de Alta Qualidade para Leitura Impecável */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/35" />
-                        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-transparent to-slate-950/90" />
+                      {/* Degradês Publicitários de Alta Qualidade para Leitura Impecável */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-slate-950/35" />
+                      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-transparent to-slate-950/90" />
 
-                        {/* Conteúdo Publicitário Integrado */}
-                        <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-between z-10 max-w-[90%] sm:max-w-[78%]">
-                          {/* Topo do Slide: Título Principal e Tagline */}
-                          <div className="pt-2 sm:pt-4 space-y-1.5">
-                            <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md font-['Poppins']">
-                              {slide.title}
-                            </h3>
-                            <p className="text-xs sm:text-sm text-slate-200/95 font-normal leading-relaxed line-clamp-3 drop-shadow-xs max-w-md">
-                              {slide.tagline}
-                            </p>
-                          </div>
-
-                          {/* Base do Slide: Indicador de pontos minimalista */}
-                          <div className="flex items-center gap-1.5 pb-2 sm:pb-3">
-                            {portfolioSlides.map((_, dotIdx) => (
-                              <div
-                                key={dotIdx}
-                                className={`transition-all rounded-full ${
-                                  dotIdx === activeSlideIndex
-                                    ? 'w-5 h-1.5 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)]'
-                                    : 'w-1.5 h-1.5 bg-white/40'
-                                }`}
-                              />
-                            ))}
-                          </div>
+                      {/* Conteúdo Publicitário Integrado */}
+                      <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-between z-10 max-w-[90%] sm:max-w-[78%]">
+                        {/* Topo do Slide: Título Principal e Tagline */}
+                        <div className="pt-2 sm:pt-4 space-y-1.5">
+                          <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight drop-shadow-md font-['Poppins']">
+                            {slide.title}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-slate-200/95 font-normal leading-relaxed line-clamp-3 drop-shadow-xs max-w-md">
+                            {slide.tagline}
+                          </p>
                         </div>
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
-              </div>
-            </>
-          )}
-        </section>
 
-        {/* SEÇÃO 2: SERVIÇOS / GESTÃO DE SERVIÇOS */}
+                        {/* Base do Slide: Indicador de pontos minimalista */}
+                        <div className="flex items-center gap-1.5 pb-2 sm:pb-3">
+                          {portfolioSlides.map((_, dotIdx) => (
+                            <div
+                              key={dotIdx}
+                              className={`transition-all rounded-full ${
+                                dotIdx === activeSlideIndex
+                                  ? 'w-5 h-1.5 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)]'
+                                  : 'w-1.5 h-1.5 bg-white/40'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          </section>
+
+        {/* SEÇÃO 2: SERVIÇOS */}
         <section
           id="section-servicos"
           ref={servicosSectionRef}
           data-tab-id="servicos"
           className="w-full h-full min-h-full shrink-0 snap-start snap-always snap-section overflow-hidden flex flex-col justify-between"
         >
-          {isSalonLoggedIn ? (
-            <ProfessionalServicesManager
-              services={catalogServicesList}
-              onUpdateServices={handleUpdateServices}
-            />
-          ) : (
-            <>
-              <SectionHeader title="Serviços & Procedimentos" isDark={isDark} />
+          <SectionHeader title="Serviços & Procedimentos" isDark={isDark} />
 
               {/* Grid de Serviços Fullwidth sem Espaçamentos (Laterais, Topo e Rodapé zerados) */}
               <div className="relative overflow-hidden select-none w-full flex-1 min-h-0 flex flex-col justify-between">
@@ -1368,30 +1426,19 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
                   </div>
                 )}
               </div>
-            </>
-          )}
         </section>
 
-        {/* SEÇÃO 3: AGENDAR / AGENDA DO DIA */}
+        {/* SEÇÃO 3: AGENDAR */}
         <section
           id="section-vagas"
           ref={vagasSectionRef}
           data-tab-id="vagas"
           className="w-full h-full min-h-full shrink-0 snap-start snap-always snap-section overflow-hidden flex flex-col justify-start"
         >
-          {isSalonLoggedIn ? (
-            <ProfessionalAgendaView
-              appointments={appointmentsList}
-              onUpdateAppointments={handleUpdateAppointments}
-              services={catalogServicesList}
-              professionals={professionalsList}
-            />
-          ) : (
-            <>
-              <SectionHeader
-                title="Agendar"
-                isDark={isDark}
-              />
+          <SectionHeader
+            title="Agendar"
+            isDark={isDark}
+          />
 
               <div className="flex-1 min-h-0 flex flex-col justify-start overflow-hidden w-full">
                 <SalonBookingModal
@@ -1408,36 +1455,25 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
                   onConfirmAppointment={handleConfirmSchedule}
                 />
               </div>
-            </>
-          )}
         </section>
 
-        {/* SEÇÃO 4: ESPAÇO, LOCALIZAÇÃO & EQUIPE / GESTÃO DO ESPAÇO */}
+        {/* SEÇÃO 4: ESPAÇO, LOCALIZAÇÃO & EQUIPE */}
         <section
           id="section-espaco"
           ref={espacoSectionRef}
           data-tab-id="espaco"
           className="w-full h-full min-h-full shrink-0 snap-start snap-always snap-section overflow-hidden flex flex-col justify-start"
         >
-          {isSalonLoggedIn ? (
-            <ProfessionalSpaceManager
-              adminSettings={adminSettings}
-              onUpdateSettings={handleUpdateSettings}
-              professionals={professionalsList}
-              onUpdateProfessionals={handleUpdateProfessionals}
-            />
-          ) : (
-            <>
-              <SectionHeader
-                title={
-                  espacoSlideIndex === 0
-                    ? (hasMultipleProfessionals ? 'Equipe & Especialistas' : 'Perfil do Profissional')
-                    : espacoSlideIndex === 1
-                    ? (salonInfo.isHomeCare ? 'Modalidade de Atendimento' : 'Estrutura do Espaço')
-                    : 'Endereço & Localização'
-                }
-                isDark={isDark}
-              />
+          <SectionHeader
+            title={
+              espacoSlideIndex === 0
+                ? (hasMultipleProfessionals ? 'Equipe & Especialistas' : 'Perfil do Profissional')
+                : espacoSlideIndex === 1
+                ? (salonInfo.isHomeCare ? 'Modalidade de Atendimento' : 'Estrutura do Espaço')
+                : 'Endereço & Localização'
+            }
+            isDark={isDark}
+          />
 
               <div className="px-3.5 sm:px-4 py-2.5 space-y-2.5 flex-1 min-h-0 flex flex-col justify-start overflow-y-auto">
                 {/* Abas de Navegação Interna da Seção Espaço */}
@@ -1756,10 +1792,9 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
                   </div>
                 </div>
               </div>
-            </>
-          )}
-        </section>
-      </div>
+          </section>
+        </div>
+      )}
 
       {/* Barra de Navegação Inferior Nativa do Estabelecimento (4 Abas: Início/Painel, Serviços/Gestão, Agendar/Agenda, Espaço/Gerenciar) */}
       <BottomNav
@@ -1768,7 +1803,7 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
         spaceTabLabel={spaceTabLabel}
         SpaceIcon={SpaceIcon}
         ServicesIcon={ServicesIcon}
-        isProfessionalMode={isSalonLoggedIn}
+        isProfessionalMode={isGerMode}
       />
 
       {/* 2. MODAL DE AGENDAMENTO CONFIRMADO (DENTRO DA SEÇÃO DO ESTABELECIMENTO) */}
@@ -1881,21 +1916,12 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
         salonName={salonInfo.name}
         salonPhone="5511987654321"
         isSalonLoggedIn={isSalonLoggedIn}
-        onOpenAdminPanel={() => setIsAdminModalOpen(true)}
+        onOpenAdminPanel={() => {
+          setViewMode('ger');
+          handleSelectTab('home');
+        }}
         onLoginSalon={handleSalonLogin}
         onLogoutSalon={handleSalonLogout}
-      />
-
-      {/* Painel Administrativo de Gestão do Salão (Exclusivo quando Logado como Salão) */}
-      <SalonAdminModal
-        isOpen={isAdminModalOpen}
-        onClose={() => setIsAdminModalOpen(false)}
-        onLogout={handleSalonLogout}
-        salonName={salonInfo.name}
-        salonPhone="5511987654321"
-        salonAddress={salonInfo.address}
-        services={catalogServices}
-        professionals={salonInfo.professionals}
       />
 
       {/* Modal de Autenticação / Login do Profissional */}
@@ -1905,6 +1931,7 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
         onLogin={handleSalonLogin}
         onSuccess={() => {
           setIsSalonLoggedIn(true);
+          setViewMode('ger');
           try {
             localStorage.setItem('vagou_salon_logged_in', 'true');
           } catch {

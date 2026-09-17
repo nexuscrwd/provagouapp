@@ -15,6 +15,33 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Desacoplamento do Efeito Landing Page no Modo Gerenciamento (`isGerMode`)
+- **Tipo:** `[Refactor / UI / UX / Navigation]`
+- **Motivo:** Remover o efeito de landing page (scroll contínuo e snap) quando o profissional estiver no "Modo Gerenciamento" (`Ger.`), tornando a navegação puramente baseada em botões e mantendo a landing page intacta no "Modo Público" (`Púb.`).
+- **Arquivos Impactados:**
+  - `src/components/SalonProfileView.tsx`:
+    - Separação estrutural do contêiner principal: quando `isGerMode` está ativo, renderiza diretamente um `<main>` com telas individuais de cada aba (`home`, `servicos`, `vagas`, `espaco`), sem container de scroll contínuo e sem efeito de encaixe snap de landing page.
+    - O `IntersectionObserver` de scroll é desabilitado no modo gerenciamento, e o clique no `BottomNav` / botões de atalho apenas atualiza o estado `activeTab`.
+    - No modo público (`Púb.`), toda a experiência rica da Landing Page com scroll suave, carrosséis e snap vertical é preservada para os clientes.
+- **Resultado:**
+  - Interface do profissional rápida, limpa, objetiva e sem rolagem indesejada entre seções de gestão.
+  - Linter (`tsc --noEmit`) e compilação de produção (`vite build`) 100% aprovados.
+
+### [2026-09-17] — Implementação do Seletor de Modo Profissional (Ger. / Púb.) e Descontinuação do Modal Admin
+- **Tipo:** `[Feat / UI / UX / Architecture]`
+- **Motivo:** Substituir o antigo modal administrativo por um seletor nativo no cabeçalho ("Ger." para Gerenciamento e "Púb." para Visão Pública dos Clientes) após login do profissional.
+- **Arquivos Impactados:**
+  - `src/components/SalonProfileView.tsx`:
+    - Adicionado estado de alternância `viewMode` (`'ger' | 'pub'`).
+    - Criado seletor no cabeçalho com badges de alto contraste `Ger.` / `Púb.` (com fundo verde `#20C933` e texto branco).
+    - Botão `PRO` exibido quando deslogado para abrir modal de PIN direto.
+    - Condicionais das 4 seções (Início/Dashboard, Serviços/Gestão, Agendar/Agenda, Espaço/Gerenciamento) e do `BottomNav` sincronizadas com `isGerMode`.
+    - Removido o antigo componente e chamada do `SalonAdminModal`.
+  - `src/components/SalonAdminModal.tsx`: Arquivo removido no protocolo de limpeza pós-obra (código morto).
+- **Resultado:**
+  - O profissional pode alternar instantaneamente entre a visão de gestão e a visão pública do cliente com um clique no cabeçalho.
+  - Build e linter 100% aprovados (`tsc --noEmit` e `vite build`).
+
 ### [2026-09-17] — Arquitetura Autocontida do ThemeProvider & Compatibilidade Total de Exportação
 - **Tipo:** `[Refactor / Architecture / Zero-Config Sync]`
 - **Motivo:** Garantir que exportações diretas do repositório ou commits simples funcionem no Cloudflare sem falhas de resolução de módulos de subpastas (`Could not resolve "./context/ThemeContext"`).
