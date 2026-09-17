@@ -1,6 +1,9 @@
 {
   "name": "Vagou Pro",
   "description": "Template White-Label de aplicativo oficial para estabelecimentos com gestão de agenda, equipe e vagas relâmpago.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": [
+    "geolocation",
+    "microphone"
+  ],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
