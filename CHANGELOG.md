@@ -15,6 +15,244 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Remoção do WhatsApp Externo e Implementação do Chat Interno no App
+- **Tipo:** `[Feat / UI / Business Rules]`
+- **Motivo:** Remoção estrita dos links e botões externos do WhatsApp para evitar evasão de agendamentos e garantir que toda a comunicação, confirmações e faturamento ocorram com total rastreabilidade dentro da plataforma Vagou.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Removido o botão/link externo para o WhatsApp.
+    - Adicionado o botão `Mensagem no App` no modal de detalhes do agendamento.
+    - Implementado o modal interativo `InAppChatModal` para troca de mensagens seguras entre profissional e cliente com respostas simuladas, chips de resposta rápida e status do protocolo.
+  - `src/components/ProfileDrawer.tsx`:
+    - Atualizada a opção de contato para `Chat no App Vagou` e ajustados os textos de notificação.
+    - Adicionado o modal de chat interno para comunicação do cliente com a equipe do estabelecimento.
+  - `src/components/SalonProfileView.tsx`:
+    - Substituída a chamada externa do WhatsApp por direcionamento ao Chat interno no aplicativo após confirmação do agendamento.
+- **Resultado:**
+  - 100% da comunicação mantida dentro do ecossistema Vagou.
+  - Passou nos testes de `lint_applet` e `compile_applet`.
+
+### [2026-09-17] — Ordenação por Demanda do Dia e Categorias de Status na Agenda
+- **Tipo:** `[Feat / UI / Business Rules]`
+- **Motivo:** Atender à regra de negócio de exibição de demandas na lista da agenda do dia por ordem estrita de prioridade (Confirmados -> Pendentes -> Concluídos -> Alterados -> Cancelados) e dentro de cada grupo ordenado pelos horários mais próximos aos últimos.
+- **Arquivos Impactados:**
+  - `src/types.ts`:
+    - Atualizado o tipo `BookingAppointment.status` para englobar as categorias `'PENDENTE'` e `'ALTERADO'`.
+  - `src/components/SalonProfileView.tsx`:
+    - Atualizados os dados de exemplo (`INITIAL_APPOINTMENTS`) com agendamentos de status variados para validação completa da ordenação.
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Criada a função utilitária `getStatusCategory` para categorização e estilo visual de cada status de demanda.
+    - Implementada a barra de abas com as 6 opções (`Todos`, `Confirmados`, `Pendentes`, `Concluídos`, `Alterados`, `Cancelados`) com badges numéricos de contagem individual.
+    - Implementada a ordenação hierárquica por grupo de demanda e horário ascendente (`localeCompare`).
+    - Adicionados banners divisores visuais de cada categoria no modo de visualização geral (`Todos`).
+    - Atualizado o modal de detalhes com badges, avisos de contexto e botões de ação configurados para cada tipo de demanda (Confirmar, Recusar, Remanejar, Concluir, Cancelar, Reativar).
+- **Resultado:**
+  - Lista de agendamentos exibida em perfeita ordem de prioridade operacional.
+  - Linter e build de produção executados e 100% aprovados.
+
+### [2026-09-17] — Aplicação Estrita do Arredondamento Unificado de 4px (`rounded-[4px]`)
+- **Tipo:** `[Refactor / UI Standards / Documented Rules]`
+- **Motivo:** Cumprimento rigoroso da regra de design documentada em `MASTER_APPROVALS_AND_GUIDELINES.md` (Seção 3.C), aplicando a classe de raio de curvatura explícito `rounded-[4px]` em todos os botões, caixas de horário, modais, campos de input e badges da visão da Agenda.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Substituídas todas as ocorrências de `rounded-lg`, `rounded-xl`, `rounded-full` e `rounded-md` por `rounded-[4px]`.
+- **Resultado:**
+  - Raio de curvatura perfeitamente unificado em 4px (`border-radius: 4px`) em 100% dos elementos da tela.
+
+### [2026-09-17] — Padronização de Arredondamento para 4px (`rounded`) nos Botões do Cabeçalho
+- **Tipo:** `[Refactor / UI Standards]`
+- **Motivo:** Ajustar o arredondamento dos botões do cabeçalho da Agenda ("Hoje" e botão de abrir Calendário) para o padrão de 4px (`rounded`), alinhando com as diretrizes do sistema de design.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Atualizadas as classes de `rounded-lg` para `rounded` (4px).
+    - Garantido o contraste obrigatório do ícone branco no estado ativo (`text-white`).
+- **Resultado:**
+  - Botões do cabeçalho alinhados ao padrão visual de 4px.
+
+### [2026-09-17] — Remoção do Ícone de Calendário do Título do Cabeçalho
+- **Tipo:** `[Refactor / Clean Layout]`
+- **Motivo:** Atender ao pedido direto de remover o ícone de calendário que antecedia o título "Agenda de Atendimentos", deixando o lado esquerdo focado apenas na tipografia.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Removido o ícone `<CalendarDays />` e a referência nos imports.
+- **Resultado:**
+  - Lado esquerdo do cabeçalho 100% limpo e direto.
+
+### [2026-09-17] — Ocultação do Ícone de Favorito no Modo Gerenciamento
+- **Tipo:** `[Fix / UI / Rules]`
+- **Motivo:** Ocultar o ícone de favorito (`Heart`) do cabeçalho quando o aplicativo estiver no modo de gerenciamento/profissional (`isGerMode`), já que a ação de favoritar é destinada exclusivamente aos clientes/usuários finais.
+- **Arquivos Impactados:**
+  - `src/components/SalonProfileView.tsx`:
+    - Condicionada a exibição do botão de favoritar (`<Heart />`) à verificação `!isGerMode`.
+- **Resultado:**
+  - Ícone de favorito oculto no modo de gerenciamento do salão e mantido visível apenas na visualização pública/cliente.
+
+### [2026-09-17] — Remoção da Caixa de Contêiner do Ícone no Cabeçalho
+- **Tipo:** `[Refactor / Clean UI]`
+- **Motivo:** Atender ao pedido direto de remover a `div` de moldura em volta do ícone de agenda do título, mantendo unicamente o ícone de forma limpa e direta.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Removida a `div` contêiner (`w-8 h-8 rounded-lg bg-emerald-500/15...`) em volta do ícone `<CalendarDays />`.
+- **Resultado:**
+  - Ícone renderizado de forma totalmente limpa e integrada, sem caixas ou molduras extras.
+
+### [2026-09-17] — Consolidação do Cabeçalho da Agenda & Ações de Data
+- **Tipo:** `[Refactor / UI / Agenda]`
+- **Motivo:** Eliminar barras duplicadas/subcabeçalhos extras e consolidar o botão "Hoje" e o ícone de calendário diretamente no lado direito do cabeçalho principal da seção da Agenda.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Unificada a barra de cabeçalho da seção com título e data na esquerda, e o botão "Hoje" acompanhado do ícone de agenda (`Calendar`) diretamente na direita.
+    - Removida qualquer barra intermediária duplicada.
+- **Resultado:**
+  - Layout totalmente plano, sem "sub do sub", direto e limpo para navegação mobile.
+
+### [2026-09-17] — Remoção do Botão "+ Novo" do Cabeçalho da Agenda
+- **Tipo:** `[Refactor / UI / Clean Layout]`
+- **Motivo:** Atender ao pedido direto de remover o botão "+ Novo" do cabeçalho da vista da Agenda (`ProfessionalAgendaView`), deixando a barra superior dedicada apenas ao título da seção e contadores de horários.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Removido o elemento `button` ("+ Novo") do canto superior direito do cabeçalho.
+- **Resultado:**
+  - Cabeçalho da agenda limpo e sem distrações visuais.
+  - Linter e build de produção 100% aprovados.
+
+### [2026-09-17] — Remoção da Duração Secundária do Bloco de Horário na Agenda
+- **Tipo:** `[Refactor / UI / Clean Layout]`
+- **Motivo:** Remover o texto secundário de duração (ex: `40 min`) de dentro da caixa do horário no card de agendamento, deixando o selo de horário contendo unicamente a hora em destaque (`text-base font-black font-mono`).
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Removido o segundo `span` com ícone de relógio e duração dentro da `div` do horário.
+- **Resultado:**
+  - Caixa de horário limpa e focada exclusivamente na hora do atendimento.
+  - Testes de linter e compilação 100% aprovados.
+
+### [2026-09-17] — Remoção da Exibição de Preço na Linha da Agenda
+- **Tipo:** `[Refactor / UI / Clean Layout]`
+- **Motivo:** Atender ao pedido direto de remover a exibição do preço da linha do card de agendamento na lista da Agenda, mantendo o visual super enxuto e focado no fluxo operacional (o valor continua acessível no modal de detalhes completos ao clicar no agendamento).
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Removido o elemento `span` que exibia o valor monetário (`R$ xx`) na extremidade direita do card de agendamento.
+- **Resultado:**
+  - Linha da agenda limpa e sem distração financeira na visualização direta do cronograma.
+  - Linter e build de produção 100% aprovados.
+
+### [2026-09-17] — Simplificação e Limpeza da Linha do Card de Agendamento
+- **Tipo:** `[Refactor / UI / Minimalist Row]`
+- **Motivo:** Remover os elementos secundários (avatar com inicial, número do protocolo e seta de navegação) da linha do card de agendamento na seção Agenda para deixar o visual ultra-limpo, focando exclusivamente no horário, nome do cliente, serviço/status e valor.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Removidos avatar do cliente, código do protocolo `#VG-XXXX` e o ícone `ChevronRight`.
+    - Removida a importação sem uso de `ChevronRight`.
+- **Resultado:**
+  - Linha do agendamento 100% minimalista e de leitura ágil.
+  - Testes de linter e compilação aprovados.
+
+### [2026-09-17] — Remoção da Linha de Cabeçalho de Colunas da Lista de Agenda
+- **Tipo:** `[Refactor / UI / Clean Layout]`
+- **Motivo:** Remover a faixa/linha superior de cabeçalho das colunas ("Horário", "Cliente", "Serviço & Duração", "Valor") da lista de agenda, deixando o layout mais limpo, direto e focado no conteúdo dos cards.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Removida a `div` com rótulos de colunas do topo da lista de atendimentos.
+- **Resultado:**
+  - Interface da agenda mais minimalista, limpa e com maior espaço útil para rolagem dos cartões de atendimento.
+  - Testes de linter e compilação aprovados.
+
+### [2026-09-17] — Destaque e Ampliação Visual do Horário na Seção Agenda
+- **Tipo:** `[UI / Agenda Enhancement]`
+- **Motivo:** Destacar visualmente o horário dos atendimentos com tipografia ampliada (`text-base font-black font-mono text-emerald-400`) e container em forma de selo cronológico, atendendo à necessidade do profissional de visualizar os horários de forma imediata e clara ao acessar a agenda.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Atualizado o container do horário na Coluna 1 da lista para incluir padding, bordas de alto contraste, fonte monoespaçada em tamanho ampliado (`text-base`) e indicação clara de duração.
+- **Resultado:**
+  - Horários de atendimento visíveis instantaneamente, facilitando a orientação rápida do profissional.
+  - Linter e build de produção 100% aprovados.
+
+### [2026-09-17] — Reestruturação da Seção Agenda: Lista por Horários, Subcabeçalho de Datas e Modal Completo
+- **Tipo:** `[Feat / UI / Agenda Redesign]`
+- **Motivo:** Atender à solicitação para reestruturar a seção de Agenda: ordenação estrita por horário de atendimento em colunas limpas (Horário, Cliente, Serviço/Duração), inclusão de subcabeçalho com opção "Hoje" e seletor de próximos dias, e modal de detalhes completo ao clicar no agendamento.
+- **Arquivos Impactados:**
+  - `src/types.ts`:
+    - Adicionados campos opcionais `duration`, `customerEmail` e `createdAt` à interface `BookingAppointment`.
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Adicionado subcabeçalho dinâmico com chip fixo "Hoje" e carrossel de datas dos próximos 7 dias.
+    - Estruturada a listagem em colunas objetivas (Horário com destaque visual, Cliente com avatar, Serviço e Duração com badge de status e Valor).
+    - Criado o modal de descrição completa do serviço agendado, exibindo: protocolo, valor em R$, duração estimada, data e horário do atendimento, data/hora da realização da reserva (`createdAt`), dados de contato do cliente com botões diretos para WhatsApp e Ligação Telefônica, e botões para concluir ou cancelar.
+- **Resultado:**
+  - Experiência de agenda fluida, com ordenação por horário, dados completos do agendamento e navegação de datas simplificada.
+  - Testes de tipagem e compilação de produção (`npm run build`) 100% aprovados.
+
+### [2026-09-17] — Remoção da Seção "Ações Rápidas" do Painel de Controle (Dashboard)
+- **Tipo:** `[Refactor / UI / Clean Layout]`
+- **Motivo:** Remover o bloco visual com o título explícito "Ações Rápidas" (contendo os botões "Novo Serviço" e "Ver Agenda") da tela principal do painel de controle do profissional (`ProfessionalDashboardView`), atendendo ao elemento exato selecionado pelo usuário.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`:
+    - Removida a `div` com título "Ações Rápidas" e botões em grid.
+- **Resultado:**
+  - Layout do painel limpo, sem redundância de botões e com atualização do servidor dev verificada.
+  - Compilação de produção e testes de lint 100% aprovados.
+
+### [2026-09-17] — Remoção da Coluna de Ações Rápidas dos Cards da Lista de Serviços
+- **Tipo:** `[Refactor / UI / Clean Layout]`
+- **Motivo:** Atender ao pedido do usuário de remover a área de Ações Rápidas dos cards da lista de serviços, eliminando botões flutuantes na extremidade direita do card para manter o layout limpo e integrado.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Removido o contêiner de Ações Rápidas (`<div className="flex items-center gap-1 shrink-0">`) da linha de cada serviço no catálogo.
+    - O modal de edição de serviço foi aprimorado para incluir o botão de "Excluir Serviço" no rodapé ao editar um serviço existente.
+- **Resultado:**
+  - Interface do catálogo de serviços totalmente limpa, espaçosa e sem poluição de ícones.
+  - Testes de tipagem e compilação de produção (`npm run build`) 100% aprovados.
+
+### [2026-09-17] — Remoção dos Botões de Ação Selecionados (Preview e Editar na Linha do Serviço)
+- **Tipo:** `[Refactor / UI / UX Cleanup]`
+- **Motivo:** Atender à solicitação direta do usuário para remover os botões de ação na linha de cada serviço na listagem, simplificando a interface e tornando a própria área de informações do serviço clicável para abrir a edição.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Removidos os botões de ação rápida de Visualização (`Eye`) e Edição (`Edit2`) da barra de ações dos cards de serviço.
+    - O bloco central de informações do serviço foi configurado com `onClick={() => handleOpenEdit(srv)}` para permiti a edição do serviço com um toque no nome ou dados do card.
+- **Resultado:**
+  - Interface dos cards de serviço mais limpa e focada.
+  - Testes de tipagem e compilação de produção (`npm run build`) 100% aprovados.
+
+### [2026-09-17] — Estruturação do Input de Duração Estimada em Dois Blocos (HH e MM)
+- **Tipo:** `[Feat / UX / Input Structuring]`
+- **Motivo:** Substituir o campo de texto livre de Duração Estimada por dois blocos estruturados e alinhados (`HH` e `MM`) com auto-foco, limite de 2 dígitos e conversão automática, garantindo zero ambiguidade na entrada de dados e gerando uma base consistente para o cronômetro e radar em tempo real do Vagou.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Criadas as funções de conversão e parsing `parseDurationToHoursMinutes` e `formatHoursMinutesToDuration`.
+    - Substituído o campo `formDuration` por estados numéricos estruturados `formHours` e `formMinutes` com `minutesInputRef` para focar automaticamente em `MM` ao preencher 2 dígitos em `HH`.
+    - Implementados dois blocos visuais estilizados `[ 00 ] h : [ 40 ] min` com resumo dinâmico formatado (ex: `40 min`, `1h 20min`).
+- **Resultado:**
+  - Experiência de preenchimento rápida e sem erros de formato no mobile e desktop.
+  - Testes de tipagem e compilação de produção (`npm run build`) 100% aprovados.
+
+### [2026-09-17] — Máscara de Entrada de Preço com Edição Livre de Dígitos (Padrão BRL)
+- **Tipo:** `[Feat / UX / Input Masking]`
+- **Motivo:** Permitir edição livre de dígitos no campo de Preço (R$) do formulário de serviço com máscara em tempo real no padrão monetário brasileiro (milhares separados por ponto e centavos por vírgula, ex: "0,99", "99,99", "999,99", "1.000,00").
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Adicionadas funções utilitárias `formatCurrencyBRL`, `parseCurrencyBRL` e `maskCurrencyBRLInput` para digitação fluida baseada em centavos.
+    - O input de preço foi atualizado para `type="text"`, `inputMode="numeric"` com `id="service-price-input"` e formatação contínua durante a digitação.
+    - O salvamento e a abertura de edição realizam o parse e a formatação numérica exata para persistência no catálogo.
+- **Resultado:**
+  - Digitação ágil e natural em teclados numéricos mobile e desktop com formatação visual imediata.
+  - Testes de tipagem e compilação de produção (`npm run build`) 100% aprovados.
+
+### [2026-09-17] — Refatoração de Ações da Lista de Serviços & Modal de Confirmação de Exclusão
+- **Tipo:** `[Refactor / UI / UX / Safety]`
+- **Motivo:**
+  1. Remover o botão de câmera/mídia da linha de cada serviço na listagem principal.
+  2. Integrar a gestão e adição de mídias (foto única, slide e vídeo 5s) diretamente dentro do modal de edição, substituindo o texto estático de aviso.
+  3. Implementar um modal de confirmação de exclusão bloqueante e seguro antes de remover o serviço do catálogo e banco de dados.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalServicesManager.tsx`:
+    - Removido o botão de câmera da listagem de serviços (linha de ações mantendo apenas Visualizar Anúncio, Editar Dados e Excluir).
+    - No modal de edição de serviço (`isModalOpen`), a seção de mídia foi integrada no lugar da div de aviso, exibindo miniatura da mídia atual configurada (foto/slide/vídeo) e botão de acesso direto ao gerenciador de mídias.
+    - O botão de exclusão agora aciona o estado `deleteConfirmService`, abrindo um modal de confirmação com destaque ao nome do serviço e ações de "Cancelar" e "Excluir Serviço".
+- **Resultado:**
+  - Interface mais limpa e organizada na listagem de serviços.
+  - Segurança contra exclusões acidentais com diálogo de confirmação.
+  - Testes de tipagem e compilação de produção (`npm run build`) 100% aprovados.
+
 ### [2026-09-17] — Refatoração Completa do Fluxo de Cadastro de Serviço & Desacoplamento de Mídia
 - **Tipo:** `[Refactor / UX / Architecture]`
 - **Motivo:** Simplificar o gerenciamento global de serviços e categorias, removendo botões dispersos de criação e implementando um fluxo passo a passo intuitivo e focado:

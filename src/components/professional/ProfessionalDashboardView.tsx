@@ -160,45 +160,6 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
           </div>
         </div>
 
-        {/* 3. Ações Rápidas em Grid */}
-        <div className="space-y-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-0.5">
-            Ações Rápidas
-          </span>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                hapticSuccess();
-                if (onOpenNewService) onOpenNewService();
-                else if (onNavigateTab) onNavigateTab('servicos');
-              }}
-              className="p-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm active:scale-98"
-            >
-              <Plus className="w-4 h-4 text-white" />
-              <span>Novo Serviço</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                hapticLight();
-                if (onOpenNewAppointment) onOpenNewAppointment();
-                else if (onNavigateTab) onNavigateTab('vagas');
-              }}
-              className={`p-3 rounded-lg border text-xs font-bold uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 ${
-                isDark 
-                  ? 'bg-slate-900 border-slate-800 text-slate-200 hover:border-emerald-500' 
-                  : 'bg-white border-slate-200 text-slate-800 hover:border-emerald-500'
-              }`}
-            >
-              <Calendar className="w-4 h-4 text-emerald-400" />
-              <span>Ver Agenda</span>
-            </button>
-          </div>
-        </div>
-
         {/* 4. Próximos Atendimentos */}
         <div className="space-y-2">
           <div className="flex items-center justify-between px-0.5">

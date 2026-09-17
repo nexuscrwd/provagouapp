@@ -135,6 +135,71 @@ const INITIAL_SAVED_VIDEOS: SavedMediaItem[] = [
   },
 ];
 
+// Funções utilitárias para máscara e conversão monetária BRL (edição livre de dígitos)
+function formatCurrencyBRL(val: number | string): string {
+  const num = typeof val === 'number' ? val : parseFloat(String(val).replace(/\./g, '').replace(',', '.')) || 0;
+  return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function parseCurrencyBRL(formattedVal: string): number {
+  const cleaned = formattedVal.replace(/\D/g, '');
+  if (!cleaned) return 0;
+  return Number(cleaned) / 100;
+}
+
+function maskCurrencyBRLInput(rawValue: string): string {
+  const digitsOnly = rawValue.replace(/\D/g, '');
+  if (!digitsOnly) return '0,00';
+  const val = Number(digitsOnly) / 100;
+  return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Funções utilitárias para duração estruturada em HH e MM
+function parseDurationToHoursMinutes(durationStr?: string): { hours: string; minutes: string } {
+  if (!durationStr) return { hours: '00', minutes: '40' };
+  
+  const str = durationStr.toLowerCase().trim();
+  let totalMinutes = 0;
+
+  if (str.includes('h')) {
+    const parts = str.split('h');
+    const hNum = parseInt(parts[0].replace(/\D/g, '')) || 0;
+    let mNum = 0;
+    if (parts[1]) {
+      mNum = parseInt(parts[1].replace(/\D/g, '')) || 0;
+    }
+    totalMinutes = hNum * 60 + mNum;
+  } else {
+    totalMinutes = parseInt(str.replace(/\D/g, '')) || 0;
+  }
+
+  if (totalMinutes <= 0) totalMinutes = 40;
+
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+
+  return {
+    hours: String(h).padStart(2, '0'),
+    minutes: String(m).padStart(2, '0'),
+  };
+}
+
+function formatHoursMinutesToDuration(hoursStr: string, minutesStr: string): string {
+  const h = Math.max(0, Math.min(23, parseInt(hoursStr) || 0));
+  const m = Math.max(0, Math.min(59, parseInt(minutesStr) || 0));
+  
+  const totalMin = h * 60 + m;
+  if (totalMin === 0) return '15 min';
+
+  if (h > 0 && m > 0) {
+    return `${h}h ${m}min`;
+  } else if (h > 0) {
+    return `${h}h`;
+  } else {
+    return `${m} min`;
+  }
+}
+
 export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerProps> = ({
   services,
   onUpdateServices,
@@ -176,9 +241,11 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
   // Campos do formulário básico
   const [formCategory, setFormCategory] = useState<string>('Cabelo');
   const [formTitle, setFormTitle] = useState<string>('');
-  const [formPrice, setFormPrice] = useState<number>(50);
-  const [formDuration, setFormDuration] = useState<string>('40 min');
+  const [formPrice, setFormPrice] = useState<string>('50,00');
+  const [formHours, setFormHours] = useState<string>('00');
+  const [formMinutes, setFormMinutes] = useState<string>('40');
   const [formDescription, setFormDescription] = useState<string>('');
+  const minutesInputRef = useRef<HTMLInputElement | null>(null);
 
   // -------------------------------------------------------------
   // GERENCIADOR DE MÍDIA DESACOPLADO (POR SERVIÇO)
@@ -241,7 +308,7 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
   const cameraVideoInputRef = useRef<HTMLInputElement | null>(null);
   const deviceVideoInputRef = useRef<HTMLInputElement | null>(null);
   
-  const [deletingServiceId, setDeletingServiceId] = useState<string | null>(null);
+  const [deleteConfirmService, setDeleteConfirmService] = useState<CatalogServiceItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -287,8 +354,9 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
     setEditingServiceId(null);
     setFormCategory(defaultCat && defaultCat !== 'Todos' ? defaultCat : (categoryList[0] || 'Cabelo'));
     setFormTitle('');
-    setFormPrice(50);
-    setFormDuration('40 min');
+    setFormPrice('50,00');
+    setFormHours('00');
+    setFormMinutes('40');
     setFormDescription('');
     setIsCreatingCategoryInline(false);
     setNewCategoryName('');
@@ -301,8 +369,10 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
     setEditingServiceId(srv.id);
     setFormCategory(srv.category || categoryList[0] || 'Cabelo');
     setFormTitle(srv.title);
-    setFormPrice(srv.price);
-    setFormDuration(srv.duration || '40 min');
+    setFormPrice(formatCurrencyBRL(srv.price));
+    const parsedDur = parseDurationToHoursMinutes(srv.duration);
+    setFormHours(parsedDur.hours);
+    setFormMinutes(parsedDur.minutes);
     setFormDescription(srv.description || '');
     setIsCreatingCategoryInline(false);
     setNewCategoryName('');
@@ -314,6 +384,9 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
     e.preventDefault();
     if (!formTitle.trim()) return;
 
+    const parsedPrice = parseCurrencyBRL(formPrice);
+    const calculatedDuration = formatHoursMinutesToDuration(formHours, formMinutes);
+
     if (editingServiceId) {
       // Editar serviço existente preservando mídias já cadastradas
       const updated = services.map((s) => {
@@ -321,8 +394,8 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
           return {
             ...s,
             title: formTitle.trim(),
-            price: Number(formPrice) || 0,
-            duration: formDuration.trim() || '40 min',
+            price: parsedPrice,
+            duration: calculatedDuration,
             category: formCategory,
             description: formDescription.trim(),
           };
@@ -337,8 +410,8 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
       const newService: CatalogServiceItem = {
         id: `srv-${Date.now()}`,
         title: formTitle.trim(),
-        price: Number(formPrice) || 0,
-        duration: formDuration.trim() || '40 min',
+        price: parsedPrice,
+        duration: calculatedDuration,
         category: formCategory,
         description: formDescription.trim(),
         photos: [],
@@ -541,12 +614,12 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
     hapticLight();
   };
 
-  // Excluir serviço
+  // Excluir serviço (confirmado via modal)
   const handleDeleteService = (id: string) => {
     hapticMedium();
     const updated = services.filter((s) => s.id !== id);
     onUpdateServices(updated);
-    setDeletingServiceId(null);
+    setDeleteConfirmService(null);
     showToast('Serviço removido do catálogo.');
   };
 
@@ -804,10 +877,14 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
                         </div>
                       </div>
 
-                      {/* Informações Centrais */}
-                      <div className="min-w-0 flex-1 space-y-1">
+                      {/* Informações Centrais (clique para editar) */}
+                      <div 
+                        onClick={() => handleOpenEdit(srv)}
+                        className="min-w-0 flex-1 space-y-1 cursor-pointer group/info"
+                        title="Clique para editar serviço"
+                      >
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <h4 className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          <h4 className={`text-xs font-bold truncate group-hover/info:text-emerald-400 transition ${isDark ? 'text-white' : 'text-slate-900'}`}>
                             {srv.title}
                           </h4>
                           
@@ -850,91 +927,6 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
                             <span>{srv.duration}</span>
                           </span>
                         </div>
-                      </div>
-
-                      {/* Ações Rápidas: Mídia / Preview / Editar / Excluir */}
-                      <div className="flex items-center gap-1 shrink-0">
-                        {deletingServiceId === srv.id ? (
-                          <div className="flex items-center gap-1 animate-in fade-in">
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteService(srv.id)}
-                              className="px-2 py-1 rounded bg-rose-500 text-white text-[10px] font-bold cursor-pointer"
-                            >
-                              Excluir
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setDeletingServiceId(null)}
-                              className={`p-1 rounded text-[10px] cursor-pointer ${
-                                isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
-                              }`}
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ) : (
-                          <>
-                            {/* Botão de Inserção / Alteração de Mídia */}
-                            <button
-                              type="button"
-                              onClick={() => handleOpenMediaManager(srv)}
-                              className={`w-7 h-7 rounded flex items-center justify-center transition cursor-pointer border ${
-                                hasMedia 
-                                  ? (isDark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:border-emerald-500' : 'bg-slate-100 border-slate-200 text-slate-700 hover:border-emerald-500')
-                                  : 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/20'
-                              }`}
-                              title={hasMedia ? "Alterar foto/vídeo" : "Adicionar foto/vídeo"}
-                            >
-                              <Camera className="w-3.5 h-3.5 text-emerald-400" />
-                            </button>
-                            
-                            {/* Botão de Visualização / Preview */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                hapticLight();
-                                setPreviewService(srv);
-                              }}
-                              className={`w-7 h-7 rounded flex items-center justify-center transition cursor-pointer border ${
-                                isDark 
-                                  ? 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:border-emerald-500' 
-                                  : 'bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-900 hover:border-emerald-500'
-                              }`}
-                              title="Visualizar anúncio no portal"
-                            >
-                              <Eye className="w-3.5 h-3.5 text-emerald-400" />
-                            </button>
-                            
-                            {/* Botão de Editar Dados do Serviço */}
-                            <button
-                              type="button"
-                              onClick={() => handleOpenEdit(srv)}
-                              className={`w-7 h-7 rounded flex items-center justify-center transition cursor-pointer border ${
-                                isDark 
-                                  ? 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:border-emerald-500' 
-                                  : 'bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-900 hover:border-emerald-500'
-                              }`}
-                              title="Editar dados"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            
-                            {/* Botão de Excluir Serviço */}
-                            <button
-                              type="button"
-                              onClick={() => setDeletingServiceId(srv.id)}
-                              className={`w-7 h-7 rounded flex items-center justify-center transition cursor-pointer border ${
-                                isDark 
-                                  ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-rose-400 hover:border-rose-500/50' 
-                                  : 'bg-slate-100 border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-300'
-                              }`}
-                              title="Excluir serviço"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </>
-                        )}
                       </div>
                     </div>
                   );
@@ -1084,12 +1076,16 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
                       R$
                     </span>
                     <input
-                      type="number"
+                      id="service-price-input"
+                      type="text"
+                      inputMode="numeric"
                       required
-                      min={0}
-                      step={1}
                       value={formPrice}
-                      onChange={(e) => setFormPrice(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const masked = maskCurrencyBRLInput(e.target.value);
+                        setFormPrice(masked);
+                      }}
+                      placeholder="0,00"
                       className={`w-full pl-8 pr-3 py-2 rounded text-xs font-bold border ${
                         isDark 
                           ? 'bg-slate-900 border-slate-800 text-white focus:border-emerald-500' 
@@ -1103,18 +1099,83 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                     4. Duração Estimada *
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={formDuration}
-                    onChange={(e) => setFormDuration(e.target.value)}
-                    placeholder="Ex: 35 min, 1h"
-                    className={`w-full px-3 py-2 rounded text-xs border ${
+                  <div className="flex items-center gap-1.5">
+                    {/* Bloco de Horas */}
+                    <div className={`flex items-center px-2 py-1.5 rounded border transition ${
                       isDark 
-                        ? 'bg-slate-900 border-slate-800 text-white placeholder-slate-500 focus:border-emerald-500' 
-                        : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-emerald-500'
-                    } outline-hidden`}
-                  />
+                        ? 'bg-slate-900 border-slate-800 focus-within:border-emerald-500' 
+                        : 'bg-slate-50 border-slate-200 focus-within:border-emerald-500'
+                    }`}>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={2}
+                        value={formHours}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, '').slice(0, 2);
+                          setFormHours(digits);
+                          if (digits.length === 2 && minutesInputRef.current) {
+                            minutesInputRef.current.focus();
+                            minutesInputRef.current.select();
+                          }
+                        }}
+                        onBlur={() => {
+                          if (!formHours) {
+                            setFormHours('00');
+                          } else {
+                            const num = Math.min(23, parseInt(formHours) || 0);
+                            setFormHours(String(num).padStart(2, '0'));
+                          }
+                        }}
+                        placeholder="00"
+                        className={`w-6 text-center text-xs font-bold bg-transparent outline-hidden ${
+                          isDark ? 'text-white' : 'text-slate-900'
+                        }`}
+                      />
+                      <span className="text-[10px] font-bold text-slate-400 select-none pl-0.5">h</span>
+                    </div>
+
+                    <span className={`text-xs font-bold ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>:</span>
+
+                    {/* Bloco de Minutos */}
+                    <div className={`flex items-center px-2 py-1.5 rounded border transition ${
+                      isDark 
+                        ? 'bg-slate-900 border-slate-800 focus-within:border-emerald-500' 
+                        : 'bg-slate-50 border-slate-200 focus-within:border-emerald-500'
+                    }`}>
+                      <input
+                        ref={minutesInputRef}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={2}
+                        value={formMinutes}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, '').slice(0, 2);
+                          setFormMinutes(digits);
+                        }}
+                        onBlur={() => {
+                          if (!formMinutes) {
+                            setFormMinutes('00');
+                          } else {
+                            const num = Math.min(59, parseInt(formMinutes) || 0);
+                            setFormMinutes(String(num).padStart(2, '0'));
+                          }
+                        }}
+                        placeholder="30"
+                        className={`w-6 text-center text-xs font-bold bg-transparent outline-hidden ${
+                          isDark ? 'text-white' : 'text-slate-900'
+                        }`}
+                      />
+                      <span className="text-[10px] font-bold text-slate-400 select-none pl-0.5">min</span>
+                    </div>
+
+                    {/* Badge de Resumo Formatado */}
+                    <span className={`text-[10.5px] font-bold shrink-0 ml-auto px-1.5 py-0.5 rounded border ${
+                      isDark ? 'bg-slate-900/60 border-slate-800 text-emerald-400' : 'bg-slate-100 border-slate-200 text-emerald-600'
+                    }`}>
+                      {formatHoursMinutesToDuration(formHours, formMinutes)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -1136,21 +1197,124 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
                 />
               </div>
 
-              {/* Dica sobre a mídia desacoplada */}
-              <div className={`p-2.5 rounded border text-[10px] flex items-center gap-2 ${
-                isDark ? 'bg-slate-900/60 border-slate-800 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'
-              }`}>
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>
-                  Fotos ou vídeo poderão ser adicionados diretamente no card após a criação.
-                </span>
-              </div>
+              {/* 6. MÍDIA DO SERVIÇO (FOTOS / SLIDE / VÍDEO) */}
+              {editingServiceId ? (
+                (() => {
+                  const currentService = services.find((s) => s.id === editingServiceId);
+                  const srvMode = currentService?.displayMode || (currentService?.mediaType === 'video' ? 'video' : 'static');
+                  const photoCount = currentService?.photos?.length || (currentService?.image ? 1 : 0);
+                  const isVideoMode = srvMode === 'video' && !!currentService?.videoUrl;
+                  const isSlideshowMode = srvMode === 'slideshow' && photoCount > 0;
+                  const hasMedia = Boolean(isVideoMode || photoCount > 0);
 
-              {/* Botão de Salvar Fixo */}
-              <div className="pt-2 sticky bottom-0 z-20">
+                  return (
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                          <Camera className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>6. Mídia do Serviço</span>
+                        </label>
+                        {hasMedia && (
+                          <span className="text-[9.5px] font-bold text-emerald-400">
+                            {isVideoMode ? 'Vídeo 5s' : isSlideshowMode ? `Slide (${photoCount})` : 'Foto Única'}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className={`p-3 rounded border flex items-center justify-between gap-3 ${
+                        isDark ? 'bg-slate-900/90 border-slate-800' : 'bg-slate-50 border-slate-200'
+                      }`}>
+                        {/* Miniatura atual ou placeholder */}
+                        <div className="w-12 h-12 rounded overflow-hidden relative shrink-0 bg-slate-950 border border-slate-800 flex items-center justify-center">
+                          {isVideoMode ? (
+                            <video
+                              src={currentService?.videoUrl}
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              className="w-full h-full object-cover"
+                            />
+                          ) : photoCount > 0 ? (
+                            <img
+                              src={currentService?.image || (currentService?.photos && currentService?.photos[0])}
+                              alt={currentService?.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center justify-center text-slate-500">
+                              <ImageIcon className="w-4 h-4 text-slate-500" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Texto descritivo e Botão de Gerenciar Mídia */}
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-[11px] font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                            {hasMedia ? 'Mídia configurada' : 'Nenhuma mídia adicionada'}
+                          </p>
+                          <p className={`text-[9.5px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                            Foto única, slide de fotos ou vídeo 5s
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (currentService) {
+                              handleOpenMediaManager(currentService);
+                            }
+                          }}
+                          className="px-3 py-2 rounded bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10.5px] cursor-pointer shrink-0 flex items-center gap-1.5 shadow-sm active:scale-98"
+                        >
+                          <Camera className="w-3.5 h-3.5 text-white" />
+                          <span>{hasMedia ? 'Alterar' : 'Adicionar'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : (
+                /* Para Novo Serviço: Dica explicativa limpa */
+                <div className={`p-2.5 rounded border text-[10px] flex items-center gap-2 ${
+                  isDark ? 'bg-slate-900/60 border-slate-800 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'
+                }`}>
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>
+                    Após cadastrar o serviço, você poderá adicionar fotos ou vídeo a qualquer momento.
+                  </span>
+                </div>
+              )}
+
+              {/* Botões de Ação Fixos no Rodapé */}
+              <div className={`pt-2 sticky bottom-0 z-20 flex items-center gap-2 ${
+                isDark ? 'bg-slate-950/95' : 'bg-white/95'
+              } backdrop-blur-xs`}>
+                {editingServiceId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const currentSrv = services.find((s) => s.id === editingServiceId);
+                      if (currentSrv) {
+                        setIsModalOpen(false);
+                        setDeleteConfirmService(currentSrv);
+                      }
+                    }}
+                    className={`px-3 py-2.5 rounded border transition cursor-pointer font-bold text-xs flex items-center justify-center gap-1.5 shrink-0 ${
+                      isDark 
+                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20' 
+                        : 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100'
+                    }`}
+                    title="Excluir este serviço"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Excluir</span>
+                  </button>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded bg-[#20C933] hover:bg-[#1bb32d] active:scale-98 text-white font-bold text-xs uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2.5 rounded bg-[#20C933] hover:bg-[#1bb32d] active:scale-98 text-white font-bold text-xs uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <Check className="w-4 h-4 text-white stroke-[2.5]" />
                   <span>{editingServiceId ? 'SALVAR ALTERAÇÕES' : 'CADASTRAR SERVIÇO'}</span>
@@ -1848,6 +2012,59 @@ export const ProfessionalServicesManager: React.FC<ProfessionalServicesManagerPr
               >
                 <Camera className="w-3.5 h-3.5 text-white" />
                 <span>Mídia</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL 5: CONFIRMAÇÃO DE EXCLUSÃO DE SERVIÇO */}
+      {/* ============================================================ */}
+      {deleteConfirmService && (
+        <div 
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/85 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setDeleteConfirmService(null)}
+        >
+          <div 
+            className={`w-full max-w-sm rounded-xl overflow-hidden shadow-2xl border p-4.5 space-y-4 ${
+              isDark ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-500 shrink-0">
+                <Trash2 className="w-5 h-5 text-rose-500" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-bold font-['Poppins']">
+                  Excluir Serviço?
+                </h3>
+                <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-600'} leading-relaxed`}>
+                  Tem certeza que deseja excluir <strong className={isDark ? 'text-white' : 'text-slate-900'}>"{deleteConfirmService.title}"</strong>? Esta ação removerá o serviço do catálogo e do banco de dados.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800/60">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmService(null)}
+                className={`px-3.5 py-2 rounded text-xs font-bold transition cursor-pointer border ${
+                  isDark 
+                    ? 'border-slate-800 text-slate-300 hover:bg-slate-900' 
+                    : 'border-slate-200 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteService(deleteConfirmService.id)}
+                className="px-4 py-2 rounded bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5 active:scale-98"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-white" />
+                <span>Excluir Serviço</span>
               </button>
             </div>
           </div>

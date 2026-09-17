@@ -3,7 +3,7 @@ import {
   ArrowLeft, Heart, Zap, 
   Calendar, Bell,
   ChevronLeft, ChevronRight, ArrowRight,
-  Check, MessageCircle,
+  Check, MessageCircle, MessageSquare,
   Scissors, Hand, Smile, Eye, Sparkles, LayoutDashboard,
   Store, Car, MapPin, Clock, Users, Wifi, Coffee, Wind,
   KeyRound, LogOut, ShieldCheck, Video, Images, EyeOff
@@ -313,7 +313,7 @@ const INITIAL_APPOINTMENTS: BookingAppointment[] = [
     time: '15:30',
     totalPrice: 65,
     address: 'Rua das Flores, 1420 - Centro',
-    status: 'CONFIRMADO',
+    status: 'PENDENTE',
     clientPhone: '(41) 99882-1140',
     customerPhone: '(41) 99882-1140',
   },
@@ -332,9 +332,28 @@ const INITIAL_APPOINTMENTS: BookingAppointment[] = [
     time: '17:00',
     totalPrice: 130,
     address: 'Rua das Flores, 1420 - Centro',
-    status: 'CONFIRMADO',
+    status: 'ALTERADO',
     clientPhone: '(41) 99234-5678',
     customerPhone: '(41) 99234-5678',
+  },
+  {
+    id: 'apt-5b',
+    protocolCode: 'VG-9429',
+    serviceTitle: 'Alinhamento Capilar',
+    service: 'Alinhamento Capilar',
+    professionalName: 'Carlos Henrique',
+    professional: 'Carlos Henrique',
+    salonName: 'Barbearia Rota 99',
+    clientName: 'Gustavo Prado',
+    customerName: 'Gustavo Prado',
+    dateTime: 'Hoje, 18:00',
+    dayGroup: 'Hoje',
+    time: '18:00',
+    totalPrice: 80,
+    address: 'Rua das Flores, 1420 - Centro',
+    status: 'CANCELADO',
+    clientPhone: '(41) 99111-2233',
+    customerPhone: '(41) 99111-2233',
   },
   {
     id: 'apt-6',
@@ -1033,19 +1052,21 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
             </button>
           )}
 
-          {/* Favoritar Rápido */}
-          <button
-            onClick={() => onToggleFavorite?.(salonInfo.name)}
-            className={`w-9 sm:w-10 h-9 sm:h-10 rounded flex items-center justify-center transition active:scale-95 cursor-pointer ${
-              isDark
-                ? 'bg-slate-900/80 hover:bg-slate-800 border border-slate-800'
-                : 'bg-slate-100 hover:bg-slate-200 border border-slate-200 shadow-xs'
-            }`}
-            title="Favoritar este estabelecimento"
-            aria-label="Favoritar estabelecimento"
-          >
-            <Heart className={`w-4.5 h-4.5 ${isFavorite ? 'fill-rose-500 text-rose-500' : isDark ? 'text-slate-400' : 'text-slate-500'}`} />
-          </button>
+          {/* Favoritar Rápido (Somente visível no modo cliente/público) */}
+          {!isGerMode && (
+            <button
+              onClick={() => onToggleFavorite?.(salonInfo.name)}
+              className={`w-9 sm:w-10 h-9 sm:h-10 rounded flex items-center justify-center transition active:scale-95 cursor-pointer ${
+                isDark
+                  ? 'bg-slate-900/80 hover:bg-slate-800 border border-slate-800'
+                  : 'bg-slate-100 hover:bg-slate-200 border border-slate-200 shadow-xs'
+              }`}
+              title="Favoritar este estabelecimento"
+              aria-label="Favoritar estabelecimento"
+            >
+              <Heart className={`w-4.5 h-4.5 ${isFavorite ? 'fill-rose-500 text-rose-500' : isDark ? 'text-slate-400' : 'text-slate-500'}`} />
+            </button>
+          )}
 
           {/* Notificações / Menu do Usuário */}
           <button
@@ -1889,18 +1910,19 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
               </button>
             </div>
 
-            {/* WhatsApp do Estabelecimento */}
-            <a
-              href={`https://wa.me/5511987654321?text=${encodeURIComponent(
-                `Olá! Acabei de agendar ${confirmedBookingData.serviceTitle} na ${confirmedBookingData.salonName}. Protocolo: ${confirmedBookingData.protocolCode}`
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs text-[#20C933] hover:underline font-medium pt-1 cursor-pointer"
+            {/* Chat no App com o Estabelecimento */}
+            <button
+              type="button"
+              onClick={() => {
+                hapticLight();
+                setConfirmedBookingData(null);
+                setIsProfileDrawerOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 text-xs text-[#20C933] hover:underline font-bold pt-1 cursor-pointer"
             >
-              <MessageCircle className="w-4 h-4" />
-              <span>Falar com o estabelecimento no WhatsApp</span>
-            </a>
+              <MessageSquare className="w-4 h-4 text-emerald-400" />
+              <span>Enviar mensagem no Chat do App</span>
+            </button>
           </div>
         </div>
       )}

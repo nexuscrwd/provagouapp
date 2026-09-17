@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, User, Mail, Phone, MapPin, Calendar, Clock, 
-  Check, Moon, Sun, Bell, MessageCircle, ShieldCheck, 
+  Check, Moon, Sun, Bell, MessageCircle, MessageSquare, Send, ShieldCheck, 
   ChevronRight, ArrowRight, Sparkles, CheckCircle2, 
   Scissors, AlertCircle, LayoutDashboard, Store, KeyRound, LogOut
 } from 'lucide-react';
@@ -79,6 +79,53 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
   const [isSalonLoginModalOpen, setIsSalonLoginModalOpen] = useState(false);
   const [salonPinInput, setSalonPinInput] = useState('');
   const [loginError, setLoginError] = useState(false);
+
+  // Estado do Chat Interno no App
+  const [isAppChatOpen, setIsAppChatOpen] = useState(false);
+  const [drawerChatMessages, setDrawerChatMessages] = useState<Array<{ id: string; sender: 'user' | 'salon' | 'system'; text: string; timestamp: string }>>([
+    {
+      id: 'sys-1',
+      sender: 'system',
+      text: 'Chat oficial do aplicativo. Suas mensagens são seguras e registradas no Vagou.',
+      timestamp: '10:00',
+    },
+    {
+      id: 'salon-1',
+      sender: 'salon',
+      text: `Olá! Como podemos ajudar com seu agendamento na ${salonName}?`,
+      timestamp: '10:01',
+    }
+  ]);
+  const [inputDrawerChatMessage, setInputDrawerChatMessage] = useState('');
+
+  const handleSendDrawerChatMessage = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!inputDrawerChatMessage.trim()) return;
+    hapticSuccess();
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const newMsg = {
+      id: `user-${Date.now()}`,
+      sender: 'user' as const,
+      text: inputDrawerChatMessage.trim(),
+      timestamp: timeStr,
+    };
+    setDrawerChatMessages(prev => [...prev, newMsg]);
+    setInputDrawerChatMessage('');
+
+    setTimeout(() => {
+      const replyTime = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
+      setDrawerChatMessages(prev => [
+        ...prev,
+        {
+          id: `salon-${Date.now()}`,
+          sender: 'salon',
+          text: 'Recebemos sua mensagem! Nossa equipe responderá em instantes pelo próprio aplicativo.',
+          timestamp: replyTime,
+        }
+      ]);
+    }, 1100);
+  };
 
   const handleSalonLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -411,38 +458,39 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
                     <div>
                       <div className="text-xs font-bold font-['Poppins']">Notificações & Lembretes</div>
                       <div className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Lembretes no WhatsApp e vibração
+                        Notificações do App e vibração
                       </div>
                     </div>
                   </div>
                   <ChevronRight className={`w-4 h-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
                 </button>
 
-                {/* Opção 5: Falar no WhatsApp */}
-                <a
-                  href={`https://wa.me/${salonPhone}?text=${encodeURIComponent(`Olá! Sou ${profile.name} e gostaria de tirar uma dúvida sobre meu agendamento na ${salonName}.`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => hapticLight()}
-                  className={`w-full p-3.5 rounded border flex items-center justify-between text-left transition active:scale-[0.99] cursor-pointer ${
+                {/* Opção 5: Chat no App com o Estabelecimento */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    hapticLight();
+                    setIsAppChatOpen(true);
+                  }}
+                  className={`w-full p-3.5 rounded-[4px] border flex items-center justify-between text-left transition active:scale-[0.99] cursor-pointer ${
                     isDark 
                       ? 'bg-slate-900 hover:bg-slate-850 border-slate-800 text-white' 
                       : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-900 shadow-xs'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0">
-                      <MessageCircle className="w-4 h-4" />
+                    <div className="w-9 h-9 rounded-[4px] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                      <MessageSquare className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold font-['Poppins']">Fale com o Estabelecimento</div>
+                      <div className="text-xs font-bold font-['Poppins']">Chat no App Vagou</div>
                       <div className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        WhatsApp direto da equipe
+                        Mensagens diretas com a equipe
                       </div>
                     </div>
                   </div>
                   <ChevronRight className={`w-4 h-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
-                </a>
+                </button>
 
                 {/* Seção de Gestão do Salão (Administração) */}
                 {isSalonLoggedIn ? (
@@ -770,14 +818,14 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
           {/* VISTA 4: CONFIGURAÇÕES & PREFERÊNCIAS */}
           {activeSubTab === 'config' && (
             <div className="space-y-3">
-              {/* Notificações WhatsApp */}
+              {/* Notificações no App */}
               <div className={`p-3.5 rounded border flex items-center justify-between ${
                 isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
               }`}>
                 <div className="space-y-0.5">
                   <div className="text-xs font-bold font-['Poppins']">Lembretes de Horário</div>
                   <div className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Receber aviso 1h antes no WhatsApp
+                    Receber aviso 1h antes no aplicativo
                   </div>
                 </div>
                 <button
@@ -925,6 +973,107 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
                   <span>Acessar Painel</span>
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal do Chat Interno no App (Cliente -> Salão) */}
+      {isAppChatOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className={`w-full max-w-md h-[85vh] sm:h-[550px] rounded-t-[4px] sm:rounded-[4px] border flex flex-col overflow-hidden shadow-2xl ${
+            isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
+          }`}>
+            {/* Cabeçalho do Chat */}
+            <div className={`p-3 border-b shrink-0 flex items-center justify-between ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
+            }`}>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-[4px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-black shrink-0">
+                  <Scissors className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className={`font-bold text-xs truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      {salonName}
+                    </h3>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" title="Online no Vagou" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 truncate flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Chat Oficial Vagou</span>
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAppChatOpen(false)}
+                className={`p-1.5 rounded-[4px] border transition cursor-pointer ${
+                  isDark ? 'border-slate-800 hover:bg-slate-800 text-slate-400' : 'border-slate-200 hover:bg-slate-200 text-slate-600'
+                }`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Mensagens */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0 bg-slate-950/40">
+              {drawerChatMessages.map((msg) => {
+                if (msg.sender === 'system') {
+                  return (
+                    <div key={msg.id} className="my-2 p-2 rounded-[4px] bg-slate-900/90 border border-slate-800 text-[10px] text-slate-400 text-center flex items-center justify-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>{msg.text}</span>
+                    </div>
+                  );
+                }
+
+                const isUser = msg.sender === 'user';
+
+                return (
+                  <div key={msg.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+                    <div className={`max-w-[85%] p-2.5 rounded-[4px] text-xs ${
+                      isUser
+                        ? 'bg-emerald-500 text-white font-medium'
+                        : isDark
+                        ? 'bg-slate-800 text-slate-100 border border-slate-700 font-medium'
+                        : 'bg-slate-100 text-slate-900 border border-slate-200 font-medium'
+                    }`}>
+                      <p>{msg.text}</p>
+                      <span className={`block text-[9px] mt-1 text-right font-mono ${
+                        isUser ? 'text-white/80' : 'text-slate-400'
+                      }`}>
+                        {msg.timestamp}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Input Form */}
+            <form onSubmit={handleSendDrawerChatMessage} className={`p-2.5 border-t shrink-0 flex items-center gap-2 ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+            }`}>
+              <input
+                type="text"
+                value={inputDrawerChatMessage}
+                onChange={(e) => setInputDrawerChatMessage(e.target.value)}
+                placeholder="Digite sua mensagem no aplicativo..."
+                className={`flex-1 px-3 py-2 rounded-[4px] border text-xs font-medium outline-hidden transition ${
+                  isDark 
+                    ? 'bg-slate-950 border-slate-800 text-white placeholder:text-slate-500 focus:border-emerald-500' 
+                    : 'bg-slate-50 border-slate-300 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500'
+                }`}
+              />
+              <button
+                type="submit"
+                disabled={!inputDrawerChatMessage.trim()}
+                className="py-2 px-3 rounded-[4px] bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1 transition cursor-pointer active:scale-98"
+              >
+                <Send className="w-3.5 h-3.5 text-white" />
+              </button>
             </form>
           </div>
         </div>

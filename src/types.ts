@@ -48,15 +48,18 @@ export interface BookingAppointment {
   dateTime: string;
   dayGroup?: string;
   time?: string;
+  duration?: string;
   totalPrice: number;
-  status: 'EM ANDAMENTO' | 'CONFIRMADO' | 'AGENDADO' | 'CONCLUÍDO' | 'CANCELADO' | 'concluido' | 'confirmado' | 'cancelado' | 'agendado' | 'em andamento' | string;
+  status: 'EM ANDAMENTO' | 'CONFIRMADO' | 'AGENDADO' | 'CONCLUÍDO' | 'CANCELADO' | 'PENDENTE' | 'ALTERADO' | 'concluido' | 'confirmado' | 'cancelado' | 'agendado' | 'em andamento' | 'pendente' | 'alterado' | string;
   address?: string;
   qrCodeMock?: string;
   customerName?: string;
   clientName?: string;
   customerPhone?: string;
   clientPhone?: string;
+  customerEmail?: string;
   dateIso?: string;
+  createdAt?: string;
 }
 
 export interface UserProfile {
