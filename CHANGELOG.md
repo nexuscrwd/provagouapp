@@ -15,6 +15,25 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Configuração do Estado Inicial das Categorias na Agenda
+- **Tipo:** `[UI / UX / Usability]`
+- **Motivo / Solicitação:** Definir que as categorias de agendamento "Confirmados" e "Pendentes" comecem já expandidas por padrão, enquanto as demais (como "Concluídos" e "Cancelados") iniciem recolhidas/ocultas.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`: Inicializado o estado reativo `collapsedCategories` com as chaves `{ concluidos: true, cancelados: true }`.
+- **Resultado:**
+  - O profissional de beleza foca instantaneamente nos atendimentos ativos do dia (Confirmados e Pendentes de ação), enquanto as informações secundárias ou históricas (Concluídos/Cancelados) permanecem ocultas por padrão, podendo ser expandidas a qualquer momento com um simples clique.
+
+### [2026-09-17] — Reestruturação dos Cartões da Agenda: Serviço Acima do Nome do Cliente
+- **Tipo:** `[UI / UX / Layout]`
+- **Motivo / Solicitação:** Posicionar a informação do nome do serviço de forma empilhada e diretamente acima do nome do cliente nos cartões da visualização da Agenda.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalAgendaView.tsx`:
+    - Reestruturado o grid de colunas internas (`grid-cols-12`) de cada card de agendamento.
+    - Criada a coluna central com empilhamento flex vertical (`flex flex-col gap-0.5 col-span-6`) para agrupar o nome do serviço (`text-[11px] font-extrabold` no topo) e o nome do cliente (`text-[10px] font-bold` abaixo).
+    - Deslocado o selo de status da demanda para uma coluna dedicada à extrema direita (`col-span-3`).
+- **Resultado:**
+  - Legibilidade aprimorada e layout muito mais intuitivo para o profissional, que agora identifica instantaneamente o procedimento a ser realizado antes do nome do cliente, mantendo a consistência geométrica dos cartões da Agenda.
+
 ### [2026-09-17] — Implementação de Divisores de Categoria Colapsáveis na Agenda
 - **Tipo:** `[UI / UX / Feature]`
 - **Motivo / Solicitação:** Converter os divisores de cabeçalho das categorias na lista de agendamentos em botões interativos e clicáveis, que ao serem tocados, recolhem ou expandem todos os agendamentos daquela respectiva categoria.

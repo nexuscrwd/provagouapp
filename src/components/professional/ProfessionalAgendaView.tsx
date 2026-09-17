@@ -135,8 +135,11 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
   const [timeFilter, setTimeFilter] = useState<'proximo' | 'hoje' | 'semana' | 'mes'>('hoje');
   const [filter, setFilter] = useState<'todos' | 'confirmados' | 'pendentes' | 'concluidos' | 'cancelados'>('todos');
   
-  // Categorias colapsáveis na agenda
-  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
+  // Categorias colapsáveis na agenda — Confirmados e Pendentes iniciam expandidos (não colapsados), Concluídos e Cancelados iniciam colapsados/ocultos por padrão
+  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({
+    concluidos: true,
+    cancelados: true,
+  });
 
   const toggleCategory = (catKey: string) => {
     hapticLight();
@@ -538,27 +541,27 @@ export const ProfessionalAgendaView: React.FC<ProfessionalAgendaViewProps> = ({
                         </div>
                       </div>
 
-                      {/* Coluna 2: Cliente */}
-                      <div className="col-span-4 min-w-0 flex items-center">
-                        <h4 className={`text-xs font-bold truncate group-hover:text-emerald-400 transition ${
-                          isDark ? 'text-white' : 'text-slate-900'
+                      {/* Coluna 2: Informações Empilhadas (Serviço ACIMA do Cliente) */}
+                      <div className="col-span-6 min-w-0 flex flex-col justify-center gap-0.5">
+                        {/* Serviço (ACIMA) */}
+                        <p className={`text-[11px] font-extrabold truncate ${
+                          isDark ? 'text-slate-100' : 'text-slate-900'
+                        }`}>
+                          {serviceDisplayName}
+                        </p>
+                        {/* Cliente (ABAIXO) */}
+                        <h4 className={`text-[10px] font-bold truncate group-hover:text-emerald-400 transition ${
+                          isDark ? 'text-slate-400' : 'text-slate-500'
                         }`}>
                           {clientDisplayName}
                         </h4>
                       </div>
 
-                      {/* Coluna 3: Serviço & Selo de Status da Demanda */}
-                      <div className="col-span-5 min-w-0 flex items-center justify-end">
-                        <div className="min-w-0 text-right">
-                          <p className={`text-[11px] font-bold truncate ${
-                            isDark ? 'text-slate-200' : 'text-slate-800'
-                          }`}>
-                            {serviceDisplayName}
-                          </p>
-                          <span className={`inline-block px-1.5 py-0.2 rounded-[4px] text-[8px] font-extrabold uppercase tracking-wider border ${catInfo.badgeFullClass}`}>
-                            {catInfo.shortLabel}
-                          </span>
-                        </div>
+                      {/* Coluna 3: Selo de Status da Demanda */}
+                      <div className="col-span-3 min-w-0 flex items-center justify-end">
+                        <span className={`inline-block px-1.5 py-0.2 rounded-[4px] text-[8px] font-extrabold uppercase tracking-wider border whitespace-nowrap ${catInfo.badgeFullClass}`}>
+                          {catInfo.shortLabel}
+                        </span>
                       </div>
                     </div>
                   )}
