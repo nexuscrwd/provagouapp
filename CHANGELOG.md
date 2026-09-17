@@ -15,6 +15,18 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Arquitetura Autocontida do ThemeProvider & Compatibilidade Total de Exportação
+- **Tipo:** `[Refactor / Architecture / Zero-Config Sync]`
+- **Motivo:** Garantir que exportações diretas do repositório ou commits simples funcionem no Cloudflare sem falhas de resolução de módulos de subpastas (`Could not resolve "./context/ThemeContext"`).
+- **Arquivos Impactados:**
+  - `src/App.tsx`: `ThemeProvider`, `ThemeContext` e o hook `useTheme` foram integrados e exportados diretamente do módulo raiz da aplicação.
+  - `src/main.tsx`: Atualizada a importação do `ThemeProvider` diretamente de `./App`.
+  - `src/context/ThemeContext.tsx`: Reexporta os tipos e funções do `App.tsx` para compatibilidade retroativa total.
+  - `src/types.ts`: Adicionados utilitários de suporte e fallbacks para evitar qualquer quebra de compilação.
+- **Resultado:**
+  - Build de produção (`npm run build`) e linter (`tsc --noEmit`) 100% aprovados e prontos para commit/deploy direto.
+
+
 ### [2026-09-17] — Compatibilidade de Build no Cloudflare (Remoção do bun.lock Incompatível)
 - **Tipo:** `[Fix / DevOps / Cloudflare Deployment]`
 - **Motivo:** O Cloudflare Pages falhava no passo de instalação (`UnknownLockfileVersion: failed to parse lockfile: 'bun.lock' - lockfileVersion: 2`), pois detectava o arquivo `bun.lock` e tentava executar `bun install --frozen-lockfile` com uma versão do Bun que não suporta a especificação v2.
