@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   Calendar, Scissors, Sparkles, Store, 
   Clock, Plus, CheckCircle2,
-  LogOut, TrendingUp, AlertCircle
+  LogOut, TrendingUp, AlertCircle, User
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { SalonAdminSettings, CatalogServiceItem, BookingAppointment } from '../../types';
@@ -53,6 +53,38 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
     if (onUpdateSettings) {
       onUpdateSettings({ isOpenNow: !isOpen });
     }
+  };
+
+  // Filtragem de Próximos Clientes (Confirmados + Pendentes + Alterados)
+  const activeNextAppointments = appointments.filter((a) => {
+    const st = (a.status || '').toUpperCase();
+    return st !== 'CANCELADO' && st !== 'CONCLUÍDO' && st !== 'CONCLUIDO';
+  });
+
+  // Cálculo do tempo restante até o atendimento
+  const getRemainingTimeText = (timeStr?: string) => {
+    if (!timeStr) return 'Em breve';
+    const match = timeStr.match(/(\d{1,2}):(\d{2})/);
+    if (!match) return timeStr;
+    const hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    
+    const now = new Date();
+    const target = new Date();
+    target.setHours(hours, minutes, 0, 0);
+
+    const diffMs = target.getTime() - now.getTime();
+    const diffMins = Math.round(diffMs / (1000 * 60));
+
+    if (diffMins < 0) {
+      if (Math.abs(diffMins) < 60) return `Em andamento (+${Math.abs(diffMins)}m)`;
+      return 'Atendimento passado';
+    }
+    if (diffMins === 0) return 'Agora';
+    if (diffMins < 60) return `Faltam ${diffMins} min`;
+    const h = Math.floor(diffMins / 60);
+    const m = diffMins % 60;
+    return m > 0 ? `Faltam ${h}h ${m}m` : `Faltam ${h}h`;
   };
 
   return (
@@ -177,42 +209,74 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
             )}
           </div>
 
-          {appointments.length === 0 ? (
-            <div className={`p-4 rounded-lg border text-center ${
+          {activeNextAppointments.length === 0 ? (
+            <div className={`p-4 rounded-[4px] border text-center ${
               isDark ? 'bg-slate-900/50 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-500'
             }`}>
               <Clock className="w-5 h-5 mx-auto mb-1 text-slate-500" />
-              <p className="text-xs font-semibold">Nenhum agendamento pendente</p>
-              <p className="text-[10px] mt-0.5 text-slate-500">Novos agendamentos aparecerão aqui em tempo real.</p>
+              <p className="text-xs font-semibold">Nenhum agendamento na fila</p>
+              <p className="text-[10px] mt-0.5 text-slate-500">Novos agendamentos e pendências aparecerão aqui.</p>
             </div>
           ) : (
-            <div className="space-y-1.5">
-              {appointments.slice(0, 3).map((app, idx) => (
-                <div
-                  key={app.protocolCode || idx}
-                  className={`p-2.5 rounded-lg border flex items-center justify-between gap-2 ${
-                    isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
-                  }`}
-                >
-                  <div className="min-w-0 flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-[10px] font-black shrink-0">
-                      {(app.customerName || app.clientName || 'C')[0].toUpperCase()}
+            <div className="grid grid-cols-2 gap-2">
+              {activeNextAppointments.slice(0, 4).map((app, idx) => {
+                const stUpper = (app.status || '').toUpperCase();
+                const isPending = stUpper === 'PENDENTE';
+                const isAlterado = stUpper === 'ALTERADO';
+                const timeLabel = app.time || '14:00';
+                const remainingTime = getRemainingTimeText(timeLabel);
+
+                return (
+                  <div
+                    key={app.protocolCode || idx}
+                    className={`p-2.5 rounded-[4px] border flex flex-col justify-between gap-2 transition relative overflow-hidden ${
+                      isDark ? 'bg-slate-900 border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs'
+                    }`}
+                  >
+                    {/* Cabeçalho do Card: Destaque da Próxima Hora & Badge de Status */}
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="flex items-center gap-1 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded-[4px] text-emerald-400 font-black text-[11px] shrink-0">
+                        <Clock className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <span>{timeLabel}</span>
+                      </div>
+
+                      <span className={`px-1.5 py-0.5 rounded-[4px] text-[8.5px] font-bold uppercase tracking-wide shrink-0 ${
+                        isPending 
+                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
+                          : isAlterado
+                          ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                          : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      }`}>
+                        {isPending ? 'Pendente' : isAlterado ? 'Alterado' : 'Confirmado'}
+                      </span>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold truncate text-white leading-tight">
-                        {app.customerName || app.clientName || 'Cliente'}
+
+                    {/* Informações do Cliente & Descrição do Serviço */}
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <div className="w-5 h-5 rounded-[4px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-[9px] font-black shrink-0">
+                          {(app.customerName || app.clientName || 'C')[0].toUpperCase()}
+                        </div>
+                        <p className={`text-xs font-bold truncate leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          {app.customerName || app.clientName || 'Cliente'}
+                        </p>
+                      </div>
+
+                      <p className="text-[10px] text-slate-400 truncate font-medium">
+                        {app.service || app.serviceTitle || 'Serviço do Cliente'}
                       </p>
-                      <p className="text-[10px] text-slate-400 truncate">
-                        {app.service || app.serviceTitle || 'Serviço'} • {app.time || app.dateTime || 'Hoje'}
-                      </p>
+                    </div>
+
+                    {/* Rodapé: Tempo Restante (Sem o valor R$) */}
+                    <div className="pt-1.5 border-t border-slate-800/60 flex items-center justify-between text-[9.5px]">
+                      <span className="text-slate-400 font-medium">Tempo:</span>
+                      <span className="font-bold text-emerald-400 truncate">
+                        {remainingTime}
+                      </span>
                     </div>
                   </div>
-
-                  <span className="text-emerald-400 font-bold text-xs shrink-0">
-                    R$ {Number(app.totalPrice || 0).toFixed(0)}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

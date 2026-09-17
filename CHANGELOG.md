@@ -15,6 +15,20 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Reestruturação dos "Próximos Clientes" em Grid com Pendentes e Tempo Restante
+- **Tipo:** `[Feat / UI / Business Rules]`
+- **Motivo:** Atualizar a seção de Próximos Clientes no Painel do Profissional para incluir agendamentos pendentes, exibir em formato de grid simples, destacar a hora com badge especial, incluir a descrição do serviço e tempo restante, e remover o valor monetário (R$).
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`:
+    - Atualizada a filtragem para contemplar agendamentos com status `PENDENTE`, `CONFIRMADO` e `ALTERADO`.
+    - Implementada a renderização em grid de 2 colunas com cards compactos em `rounded-[4px]`.
+    - Adicionado o badge em destaque com o horário agendado e o badge indicador de status (`Pendente`, `Confirmado`, `Alterado`).
+    - Adicionado a descrição do serviço e o contador de tempo restante (`Faltam X min` / `Faltam Xh`).
+    - Removido o campo de valor (R$) do card conforme solicitado.
+- **Resultado:**
+  - Visualização em grid limpa, ágil e focada no tempo operacional da rotina do profissional.
+  - Linter e build de produção checados e 100% validados.
+
 ### [2026-09-17] — Remoção do WhatsApp Externo e Implementação do Chat Interno no App
 - **Tipo:** `[Feat / UI / Business Rules]`
 - **Motivo:** Remoção estrita dos links e botões externos do WhatsApp para evitar evasão de agendamentos e garantir que toda a comunicação, confirmações e faturamento ocorram com total rastreabilidade dentro da plataforma Vagou.
