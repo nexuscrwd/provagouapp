@@ -15,6 +15,16 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-17] — Passo 1: Seleção Pública de Profissional na Vitrine
+- **Tipo:** `[Feat / UX / Client]`
+- **Motivo / Solicitação:** Adaptação da visão pública do portal do cliente para incluir um seletor visual de profissionais antes da escolha do serviço ("Passo 1").
+- **Arquivos Impactados:**
+  - `src/components/SalonProfileView.tsx`: Implementado um carrossel horizontal *snap-scroll* com avatares dos membros da equipe no topo da seção de Serviços. Os serviços abaixo agora são filtrados dinamicamente com base no profissional selecionado (se houver `professionalId` atrelado).
+  - `src/components/SalonBookingModal.tsx`: Adicionada a *prop* `preSelectedProfessionalName`, preenchendo automaticamente a escolha do cliente caso ele já tenha selecionado um profissional na vitrine pública.
+  - `src/components/SalonProfileView.tsx` (Refatoração): O estado local dos profissionais públicos agora consome dinamicamente os dados atualizados de `vagou_team_members` gerados pelo painel gerencial `TeamManager`.
+- **Resultado:**
+  - Experiência otimizada: Clientes agora podem clicar na foto de um especialista específico ou em "Qualquer Livre" logo na entrada da vitrine, e todo o fluxo (serviços e modal de agendamento) se ajusta dinamicamente a essa escolha inicial.
+
 ### [2026-09-17] — RBAC & Gestão Multi-Tenant de Profissionais (Equipe)
 - **Tipo:** `[Feat / UI / Architecture]`
 - **Motivo / Solicitação:** Iniciar o modelo de RBAC (Role-Based Access Control) multi-tenant, permitindo que a barbearia/salão convide múltiplos profissionais (com papéis de Admin, Profissional Padrão ou Recepcionista) sem misturar agendas ou faturamentos. O Firebase foi removido do projeto em prol da futura adoção do Supabase, rodando o fluxo inicialmente com estado local.

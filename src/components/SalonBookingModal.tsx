@@ -31,6 +31,7 @@ interface SalonBookingModalProps {
   skipDateStep?: boolean;
   initialTimeSlot?: string | null;
   initialDateIso?: string;
+  preSelectedProfessionalName?: string;
   onConfirmAppointment: (bookingData: {
     service: CatalogServiceItem;
     professional: string;
@@ -59,6 +60,7 @@ export const SalonBookingModal: React.FC<SalonBookingModalProps> = ({
   skipDateStep = false,
   initialTimeSlot,
   initialDateIso,
+  preSelectedProfessionalName,
   onConfirmAppointment,
 }) => {
   const { isDark } = useTheme();
@@ -139,7 +141,7 @@ export const SalonBookingModal: React.FC<SalonBookingModalProps> = ({
   });
 
   // 3. Professional Selection State ('any' or professional name)
-  const [selectedProfessional, setSelectedProfessional] = useState<string>('any');
+  const [selectedProfessional, setSelectedProfessional] = useState<string>(preSelectedProfessionalName || 'any');
 
   // 4. Time Slot Selection
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(initialTimeSlot || null);

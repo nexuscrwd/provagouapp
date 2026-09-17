@@ -6,7 +6,7 @@ import {
   Check, MessageCircle, MessageSquare,
   Scissors, Hand, Smile, Eye, Sparkles, LayoutDashboard,
   Store, Car, MapPin, Clock, Users, Wifi, Coffee, Wind,
-  KeyRound, LogOut, ShieldCheck, EyeOff
+  KeyRound, LogOut, ShieldCheck, EyeOff, User
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ServiceOffer, BookingAppointment, SalonAdminSettings } from '../types';
@@ -522,6 +522,21 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
   // Lista dinâmica de profissionais da equipe
   const [professionalsList, setProfessionalsList] = useState<SalonProfessionalItem[]>(() => {
     try {
+      const savedTeam = localStorage.getItem('vagou_team_members');
+      if (savedTeam) {
+        const parsedTeam = JSON.parse(savedTeam);
+        if (Array.isArray(parsedTeam) && parsedTeam.length > 0) {
+          return parsedTeam.map(member => ({
+            id: member.id,
+            name: member.name,
+            role: member.role === 'admin' ? 'Dono / Gerente' : member.role === 'receptionist' ? 'Recepcionista' : 'Profissional',
+            avatar: member.avatarUrl,
+            avatarUrl: member.avatarUrl,
+            rating: 5.0
+          }));
+        }
+      }
+
       const saved = localStorage.getItem('vagou_custom_professionals');
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -619,6 +634,7 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
   const [bookingService, setBookingService] = useState<CatalogServiceItem | null>(null);
   const [skipDateStep, setSkipDateStep] = useState<boolean>(false);
   const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0);
+  const [selectedPublicProfessional, setSelectedPublicProfessional] = useState<string>('any');
 
   // Refs para controle do scroll snap da landing page (4 seções)
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -840,7 +856,21 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
   }, [isGerMode]);
 
   // Catálogo completo de serviços conectado ao estado dinâmico gerenciável
-  const catalogServices: CatalogServiceItem[] = catalogServicesList;
+  const filteredCatalogServices = useMemo(() => {
+    let base = catalogServicesList;
+    if (selectedPublicProfessional !== 'any') {
+      const activeProf = professionalsList.find(p => p.name === selectedPublicProfessional);
+      if (activeProf && activeProf.id) {
+        // Filter by professionalId if it exists in the service
+        // Since many legacy services might not have professionalId, we only filter those that do have it.
+        // Wait, if we want strict multi-tenant:
+        base = base.filter(srv => !srv.professionalId || srv.professionalId === activeProf.id);
+      }
+    }
+    return base.length > 0 ? base : catalogServicesList;
+  }, [catalogServicesList, selectedPublicProfessional, professionalsList]);
+
+  const catalogServices: CatalogServiceItem[] = filteredCatalogServices;
 
   const handleOpenBooking = (srv?: CatalogServiceItem, directToTimeGrid = false, timeSlot?: string, dateIso?: string) => {
     setBookingService(srv || catalogServices[0]);
@@ -959,6 +989,10 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
     setSwapDirection(1);
     setServicePage((prev) => (prev + 1) % totalServicePages);
   };
+
+  useEffect(() => {
+    setServicePage(0);
+  }, [selectedPublicProfessional]);
 
   const currentServices = useMemo(() => {
     const start = servicePage * SERVICES_PER_PAGE;
@@ -1287,6 +1321,53 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
         >
           <SectionHeader title="Serviços & Procedimentos" isDark={isDark} />
 
+          {/* PASSO 1: Seleção de Profissional (Visível Apenas se Múltiplos Profissionais) */}
+          {hasMultipleProfessionals && (
+            <div className={`w-full shrink-0 border-b ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'} p-3 flex flex-col gap-2`}>
+              <h3 className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                1. Com quem deseja agendar?
+              </h3>
+              <div className="flex items-center gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory">
+                {/* Qualquer Profissional Livre */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedPublicProfessional('any')}
+                  className={`shrink-0 flex flex-col items-center gap-1.5 snap-center transition cursor-pointer ${selectedPublicProfessional === 'any' ? 'opacity-100 scale-100' : 'opacity-60 scale-95 hover:opacity-100'}`}
+                >
+                  <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-colors ${selectedPublicProfessional === 'any' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500' : isDark ? 'border-slate-700 bg-slate-800 text-slate-400' : 'border-slate-300 bg-slate-200 text-slate-500'}`}>
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <span className={`text-[9px] font-bold uppercase tracking-wider max-w-[65px] text-center truncate leading-tight ${selectedPublicProfessional === 'any' ? (isDark ? 'text-emerald-400' : 'text-emerald-600') : (isDark ? 'text-slate-400' : 'text-slate-600')}`}>
+                    Qualquer Livre
+                  </span>
+                </button>
+
+                {/* Lista de Profissionais */}
+                {professionalsList.map(prof => (
+                  <button
+                    key={prof.id || prof.name}
+                    type="button"
+                    onClick={() => setSelectedPublicProfessional(prof.name)}
+                    className={`shrink-0 flex flex-col items-center gap-1.5 snap-center transition cursor-pointer ${selectedPublicProfessional === prof.name ? 'opacity-100 scale-100' : 'opacity-60 scale-95 hover:opacity-100'}`}
+                  >
+                    <div className={`w-12 h-12 rounded-full border-2 overflow-hidden transition-colors relative ${selectedPublicProfessional === prof.name ? 'border-emerald-500' : isDark ? 'border-slate-700' : 'border-slate-300'}`}>
+                      {prof.avatar || prof.avatarUrl ? (
+                        <img src={prof.avatar || prof.avatarUrl} alt={prof.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      ) : (
+                        <div className="w-full h-full bg-slate-800 flex items-center justify-center">
+                          <User className="w-5 h-5 text-slate-400" />
+                        </div>
+                      )}
+                    </div>
+                    <span className={`text-[9px] font-bold uppercase tracking-wider max-w-[65px] text-center truncate leading-tight ${selectedPublicProfessional === prof.name ? (isDark ? 'text-emerald-400' : 'text-emerald-600') : (isDark ? 'text-slate-400' : 'text-slate-600')}`}>
+                      {prof.name.split(' ')[0]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
               {/* Grid de Serviços Fullwidth sem Espaçamentos (Laterais, Topo e Rodapé zerados) */}
               <div className="relative overflow-hidden select-none w-full flex-1 min-h-0 flex flex-col justify-between">
                 <AnimatePresence mode="wait" custom={swapDirection}>
@@ -1462,11 +1543,12 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
                   salonName={salonInfo.name}
                   salonAddress={salonInfo.address}
                   services={catalogServices}
-                  professionals={salonInfo.professionals}
+                  professionals={professionalsList}
                   initialService={bookingService}
                   skipDateStep={skipDateStep}
                   initialTimeSlot={selectedTimeSlotForBooking}
                   initialDateIso={selectedCalendarDateIso}
+                  preSelectedProfessionalName={selectedPublicProfessional}
                   onConfirmAppointment={handleConfirmSchedule}
                 />
               </div>
