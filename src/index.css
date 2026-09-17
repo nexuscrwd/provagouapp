@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  --accent-color: #10b981;
   --brand-primary: #D97706;
   --brand-secondary: #1E293B;
   --brand-bg: #0B0F17;
@@ -10,6 +11,26 @@
   --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* Custom accent utilities */
+.bg-accent { background-color: var(--accent-color); }
+.text-accent { color: var(--accent-color); }
+.border-accent { border-color: var(--accent-color); }
+.hover\:bg-accent:hover { background-color: var(--accent-color); }
+.hover\:text-accent:hover { color: var(--accent-color); }
+.hover\:border-accent:hover { border-color: var(--accent-color); }
+
+/* Global overrides to make emerald colors dynamic */
+.bg-emerald-500, .bg-emerald-600, .bg-emerald-400 { background-color: var(--accent-color) !important; }
+.hover\:bg-emerald-600:hover { background-color: var(--accent-color) !important; }
+.text-emerald-500, .text-emerald-400 { color: var(--accent-color) !important; }
+.border-emerald-500, .border-emerald-600 { border-color: var(--accent-color) !important; }
+.border-emerald-500\/30 { border-color: color-mix(in srgb, var(--accent-color), transparent 70%) !important; }
+.bg-emerald-400\/10, .bg-emerald-500\/10 { background-color: color-mix(in srgb, var(--accent-color), transparent 90%) !important; }
+.focus\:border-emerald-500:focus { border-color: var(--accent-color) !important; }
+.active\:text-emerald-500:active { color: var(--accent-color) !important; }
+/* Specifically targeting nav active states */
+.text-emerald-600 { color: var(--accent-color) !important; }
 
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;

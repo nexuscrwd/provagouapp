@@ -86,8 +86,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             <div className={`w-[34px] h-[34px] rounded flex items-center justify-center transition-all ${
               isActive
                 ? isDark
-                  ? 'bg-emerald-950/80 border border-[#20C933]/60 text-[#20C933] scale-105 shadow-[0_0_12px_rgba(32,201,51,0.25)]'
-                  : 'bg-emerald-50 border border-[#20C933]/60 text-[#087A2A] scale-105 shadow-[0_0_12px_rgba(32,201,51,0.18)]'
+                  ? 'bg-accent/20 border border-accent text-accent scale-105 shadow-[0_0_12px_var(--accent-color)]/25'
+                  : 'bg-accent/10 border border-accent text-accent scale-105 shadow-[0_0_12px_var(--accent-color)]/20'
                 : isDark
                   ? 'text-slate-400 hover:text-slate-200'
                   : 'text-slate-500 hover:text-slate-900'
@@ -96,7 +96,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             </div>
             <span className={`text-[10px] tracking-wide font-['Poppins'] font-bold truncate max-w-[64px] ${
               isActive
-                ? isDark ? 'text-[#20C933]' : 'text-[#087A2A]'
+                ? 'text-accent'
                 : isDark ? 'text-slate-400' : 'text-slate-500'
             }`}>
               {tab.label}

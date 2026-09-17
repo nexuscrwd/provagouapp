@@ -166,7 +166,19 @@ const INITIAL_SALON_OFFERS: ServiceOffer[] = [
 ];
 
 export const App: React.FC = () => {
-  const { isDark } = useTheme();
+  const { isDark, accentColor } = useTheme();
+
+  useEffect(() => {
+    const colorMap: Record<string, string> = {
+      emerald: '#10b981',
+      blue: '#3b82f6',
+      rose: '#f43f5e',
+      amber: '#f59e0b',
+      violet: '#8b5cf6',
+    };
+    document.documentElement.style.setProperty('--accent-color', colorMap[accentColor] || '#10b981');
+  }, [accentColor]);
+
 
   const [isFavorite, setIsFavorite] = useState<boolean>(() => {
     try {

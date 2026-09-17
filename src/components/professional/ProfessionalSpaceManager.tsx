@@ -230,7 +230,7 @@ export const ProfessionalSpaceManager: React.FC<ProfessionalSpaceManagerProps> =
 
         <button
           type="submit"
-          className="w-full py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm active:scale-98"
+          className="w-full py-2 rounded-lg bg-accent hover:bg-accent text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm active:scale-98"
         >
           <Save className="w-3.5 h-3.5 text-white" />
           <span>Salvar Alterações</span>

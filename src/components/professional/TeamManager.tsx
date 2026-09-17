@@ -322,7 +322,7 @@ export const TeamManager: React.FC = () => {
               </div>
 
               <div className="pt-2">
-                <button type="submit" className="w-full py-3 rounded bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer">
+                <button type="submit" className="w-full py-3 rounded bg-accent hover:bg-accent text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer">
                   {editingMember ? 'Salvar Alterações' : 'Adicionar à Equipe'}
                 </button>
               </div>
