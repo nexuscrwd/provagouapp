@@ -7,11 +7,23 @@
     <meta name="description" content="Aplicativo oficial do estabelecimento — Barbearia Rota 99. Catálogo de serviços, agendamento de horários e apresentação do espaço." />
     
     <!-- PWA Primary Meta Tags -->
-    <meta name="theme-color" content="#20C933" />
+    <meta name="theme-color" content="#151A1E" id="meta-theme-color" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Meu Negócio" />
+    <script>
+      (function() {
+        try {
+          var savedColor = localStorage.getItem('vagou_accent_color');
+          if (savedColor) {
+            document.documentElement.style.setProperty('--accent-color', savedColor);
+            var meta = document.getElementById('meta-theme-color');
+            if (meta) meta.setAttribute('content', savedColor);
+          }
+        } catch(e) {}
+      })();
+    </script>
     
     <!-- Google Fonts: Poppins (Manual de Identidade Visual Vagou) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -9,7 +9,7 @@
   "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
   "orientation": "portrait-primary",
   "background_color": "#151A1E",
-  "theme_color": "#20C933",
+  "theme_color": "#151A1E",
   "prefer_related_applications": false,
   "categories": ["lifestyle", "beauty", "shopping", "utilities"],
   "icons": [
