@@ -20,17 +20,21 @@
 .hover\:text-accent:hover { color: var(--accent-color); }
 .hover\:border-accent:hover { border-color: var(--accent-color); }
 
-/* Global overrides to make emerald colors dynamic */
-.bg-emerald-500, .bg-emerald-600, .bg-emerald-400 { background-color: var(--accent-color) !important; }
-.hover\:bg-emerald-600:hover { background-color: var(--accent-color) !important; }
-.text-emerald-500, .text-emerald-400 { color: var(--accent-color) !important; }
-.border-emerald-500, .border-emerald-600 { border-color: var(--accent-color) !important; }
-.border-emerald-500\/30 { border-color: color-mix(in srgb, var(--accent-color), transparent 70%) !important; }
-.bg-emerald-400\/10, .bg-emerald-500\/10 { background-color: color-mix(in srgb, var(--accent-color), transparent 90%) !important; }
+/* Global overrides to make emerald and custom green colors dynamic */
+.bg-emerald-500, .bg-emerald-600, .bg-emerald-400, .bg-\[\#20C933\], [class*="bg-[#20C933]"] { background-color: var(--accent-color) !important; }
+.hover\:bg-emerald-600:hover, .hover\:bg-\[\#1bb32d\]:hover { background-color: var(--accent-color) !important; }
+.text-emerald-500, .text-emerald-400, .text-\[\#20C933\], [class*="text-[#20C933]"] { color: var(--accent-color) !important; }
+.border-emerald-500, .border-emerald-600, .border-\[\#20C933\], [class*="border-[#20C933]"] { border-color: var(--accent-color) !important; }
+.border-emerald-500\/30, .border-emerald-500\/40, .border-emerald-500\/50 { border-color: color-mix(in srgb, var(--accent-color), transparent 60%) !important; }
+.bg-emerald-400\/10, .bg-emerald-500\/10, .bg-emerald-500\/15, .bg-emerald-500\/20, .bg-emerald-950\/90, .bg-emerald-950\/95 { background-color: color-mix(in srgb, var(--accent-color), transparent 85%) !important; }
+.bg-emerald-50, .bg-emerald-50\/80 { background-color: color-mix(in srgb, var(--accent-color), transparent 90%) !important; }
 .focus\:border-emerald-500:focus { border-color: var(--accent-color) !important; }
 .active\:text-emerald-500:active { color: var(--accent-color) !important; }
+/* Dynamic gradient for section headers (AGENDAR, etc.) */
+.from-emerald-950\/95, .from-emerald-500\/20 { --tw-gradient-from: color-mix(in srgb, var(--accent-color), black 60%) var(--tw-gradient-from-position) !important; }
+.via-emerald-900\/70, .via-emerald-500\/15 { --tw-gradient-via: color-mix(in srgb, var(--accent-color), transparent 75%) var(--tw-gradient-via-position) !important; }
 /* Specifically targeting nav active states */
-.text-emerald-600 { color: var(--accent-color) !important; }
+.text-emerald-600, .text-\[\#087A2A\] { color: var(--accent-color) !important; }
 
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;

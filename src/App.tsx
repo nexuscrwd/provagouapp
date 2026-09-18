@@ -54,6 +54,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       localStorage.setItem('vagou_accent_color', accentColor);
       document.documentElement.style.setProperty('--accent-color', accentColor);
+
+      // Atualiza dinamicamente a barra de status do celular (Android/iOS PWA)
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', accentColor);
+      }
     } catch {}
   }, [accentColor]);
 

@@ -585,10 +585,24 @@ export const SalonProfileView: React.FC<SalonProfileViewProps> = ({
     setAdminSettings(newSettings);
     try {
       localStorage.setItem('vagou_salon_admin_settings', JSON.stringify(newSettings));
+      if (newSettings.salonName) {
+        document.title = `${newSettings.salonName} — Vagou`;
+        const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+        if (appleTitle) appleTitle.setAttribute('content', newSettings.salonName);
+      }
     } catch {
       // ignore
     }
   };
+
+  useEffect(() => {
+    const currentName = adminSettings.salonName || salonName;
+    if (currentName) {
+      document.title = `${currentName} — Vagou`;
+      const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (appleTitle) appleTitle.setAttribute('content', currentName);
+    }
+  }, [adminSettings.salonName, salonName]);
 
   const handleUpdateAppointments = (newApts: BookingAppointment[]) => {
     setAppointmentsList(newApts);

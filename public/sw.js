@@ -1,5 +1,5 @@
 // Service Worker for Vagou PWA - Network First, Auto-Update & Complete Cache Reset
-const CACHE_NAME = 'vagou-cache-v7';
+const CACHE_NAME = 'vagou-cache-v8';
 
 // Instalação: força ativação imediata sem esperar o fechamento de abas
 self.addEventListener('install', (event) => {

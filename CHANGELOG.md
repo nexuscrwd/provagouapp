@@ -15,6 +15,19 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-18] — Sincronização Dinâmica do Cabeçalho do Celular (theme-color) e Nomes PWA
+- **Tipo:** `[Feat / UX / Mobile PWA]`
+- **Motivo / Solicitação:** Na tela inicial do celular havia dois ícones com o mesmo nome "Vagou" (Portal vs Meu Negócio). Além disso, a barra superior de status do celular (hora, bateria, sinal) ficava verde fixa em vez de acompanhar a cor personalizada do tema.
+- **Arquivos Impactados:**
+  - `src/App.tsx`: Adicionado efeito dinâmico que atualiza em tempo real a tag `<meta name="theme-color">` com base no `accentColor` selecionado pelo gestor.
+  - `src/index.css`: Adicionadas regras globais com `!important` para cobrir elementos `#20C933` e degradês de cabeçalhos de seção (`SectionHeader`), garantindo que qualquer cor hex escolhida no seletor pinte todos os detalhes do app.
+  - `src/components/SalonProfileView.tsx`: Adicionada sincronização em tempo real de `document.title` e `meta[name="apple-mobile-web-app-title"]` para exibir o nome do estabelecimento ou "Meu Negócio".
+  - `public/manifest.json`: Confirmado `short_name: "Meu Negócio"` e nome descritivo.
+  - `public/sw.js`: Versão de cache atualizada para `vagou-cache-v8` para forçar limpeza e aplicação instantânea em dispositivos móveis.
+- **Resultado:**
+  - A barra superior do celular (status bar) agora muda instantaneamente para a cor escolhida pelo estabelecimento (ex: azul, rosa, âmbar, roxo ou qualquer hex).
+  - O aplicativo do estabelecimento instalado via PWA se distingue claramente do portal central Vagou.
+
 ### [2026-09-17] — Adição de Foto de Perfil na Gestão de Equipe
 - **Tipo:** `[Feat / UX / Admin]`
 - **Motivo / Solicitação:** Necessidade de permitir a inclusão da foto do profissional durante seu cadastro no painel gerencial, para que apareça publicamente no Seletor da Vitrine (Passo 1).
