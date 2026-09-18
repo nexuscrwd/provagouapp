@@ -413,25 +413,25 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
 
               // Estilos no Dark Mode (fundos temáticos com transparência elegante para manter harmonia dark)
               let darkCardClass = 'bg-slate-900 border-slate-800';
-              let darkLabelClass = 'text-slate-400';
-              let darkNumberClass = 'text-slate-100';
+              let darkLabelClass = 'text-white/80';
+              let darkNumberClass = 'text-white font-black';
 
               if (item.id === 'hoje') {
                 darkCardClass = 'bg-blue-950/60 border-blue-800/80';
-                darkLabelClass = 'text-blue-300';
-                darkNumberClass = 'text-blue-100';
+                darkLabelClass = 'text-white/90 font-bold';
+                darkNumberClass = 'text-white';
               } else if (item.id === 'confirmados') {
                 darkCardClass = 'bg-emerald-950/60 border-emerald-800/80';
-                darkLabelClass = 'text-emerald-300';
-                darkNumberClass = 'text-emerald-100';
+                darkLabelClass = 'text-white/90 font-bold';
+                darkNumberClass = 'text-white';
               } else if (item.id === 'pendentes') {
                 darkCardClass = 'bg-amber-950/60 border-amber-800/80';
-                darkLabelClass = 'text-amber-300';
-                darkNumberClass = 'text-amber-100';
+                darkLabelClass = 'text-white/90 font-bold';
+                darkNumberClass = 'text-white';
               } else if (item.id === 'cancelados') {
                 darkCardClass = 'bg-rose-950/60 border-rose-800/80';
-                darkLabelClass = 'text-rose-300';
-                darkNumberClass = 'text-rose-100';
+                darkLabelClass = 'text-white/90 font-bold';
+                darkNumberClass = 'text-white';
               }
 
               return (
@@ -462,14 +462,14 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
         {/* 4. Próximos Atendimentos */}
         <div className="space-y-3.5">
           <div className="flex items-center justify-between px-0.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-white' : 'text-slate-500'}`}>
               Próximos Clientes
             </span>
             {onNavigateTab && (
               <button
                 type="button"
                 onClick={() => onNavigateTab('vagas')}
-                className="text-[10px] font-bold text-emerald-400 hover:underline cursor-pointer"
+                className={`text-[10px] font-bold hover:underline cursor-pointer ${isDark ? 'text-white' : 'text-emerald-600'}`}
               >
                 Ver todos
               </button>

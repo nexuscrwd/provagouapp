@@ -14,14 +14,11 @@
 
 /* Custom accent utilities */
 .bg-accent { background-color: var(--accent-color); }
-.text-accent { color: var(--accent-color); }
 .border-accent { border-color: var(--accent-color); }
 .hover\:bg-accent:hover { background-color: var(--accent-color); }
-.hover\:text-accent:hover { color: var(--accent-color); }
 .hover\:border-accent:hover { border-color: var(--accent-color); }
 .bg-accent-subtle { background-color: color-mix(in srgb, var(--accent-color), white 80%) !important; }
 .border-accent-subtle { border-color: color-mix(in srgb, var(--accent-color), white 50%) !important; }
-.text-accent-subtle { color: color-mix(in srgb, var(--accent-color), black 25%) !important; }
 .bg-nav-light-theme { 
   background-color: var(--accent-color) !important; 
   border-top-color: rgba(255, 255, 255, 0.2) !important;
@@ -33,21 +30,42 @@
 .status-amber-bg { background-color: #fbbf24 !important; border-color: #f59e0b !important; }
 .status-rose-bg { background-color: #e11d48 !important; border-color: #be123c !important; }
 
-/* Global overrides to make emerald and custom green colors dynamic */
+/* Global overrides: Backgrounds, Borders and Rings use the theme's selected color */
 .bg-emerald-500, .bg-emerald-600, .bg-emerald-400, .bg-\[\#20C933\], [class*="bg-[#20C933]"] { background-color: var(--accent-color) !important; }
 .hover\:bg-emerald-600:hover, .hover\:bg-\[\#1bb32d\]:hover { background-color: var(--accent-color) !important; }
-.text-emerald-500, .text-emerald-400, .text-\[\#20C933\], [class*="text-[#20C933]"] { color: var(--accent-color) !important; }
 .border-emerald-500, .border-emerald-600, .border-\[\#20C933\], [class*="border-[#20C933]"] { border-color: var(--accent-color) !important; }
 .border-emerald-500\/30, .border-emerald-500\/40, .border-emerald-500\/50 { border-color: color-mix(in srgb, var(--accent-color), transparent 60%) !important; }
 .bg-emerald-400\/10, .bg-emerald-500\/10, .bg-emerald-500\/15, .bg-emerald-500\/20, .bg-emerald-950\/90, .bg-emerald-950\/95 { background-color: color-mix(in srgb, var(--accent-color), transparent 85%) !important; }
 .bg-emerald-50, .bg-emerald-50\/80 { background-color: color-mix(in srgb, var(--accent-color), transparent 90%) !important; }
 .focus\:border-emerald-500:focus { border-color: var(--accent-color) !important; }
-.active\:text-emerald-500:active { color: var(--accent-color) !important; }
+
 /* Dynamic gradient for section headers (AGENDAR, etc.) */
 .from-emerald-950\/95, .from-emerald-500\/20 { --tw-gradient-from: color-mix(in srgb, var(--accent-color), black 60%) var(--tw-gradient-from-position) !important; }
 .via-emerald-900\/70, .via-emerald-500\/15 { --tw-gradient-via: color-mix(in srgb, var(--accent-color), transparent 75%) var(--tw-gradient-via-position) !important; }
-/* Specifically targeting nav active states */
-.text-emerald-600, .text-\[\#087A2A\] { color: var(--accent-color) !important; }
+
+/* Text Color Rules: In Light Mode, use accent color for text. In Dark Mode, texts and SVGs are PURE WHITE */
+.text-white, .dark .text-white { color: #ffffff !important; }
+.dark svg.text-white, .dark .text-white svg { color: #ffffff !important; stroke: currentColor; }
+
+html:not(.dark) .text-emerald-500,
+html:not(.dark) .text-emerald-400,
+html:not(.dark) .text-emerald-600,
+html:not(.dark) .text-accent,
+html:not(.dark) .text-\[\#20C933\],
+html:not(.dark) .text-\[\#087A2A\],
+html:not(.dark) [class*="text-[#20C933]"] {
+  color: var(--accent-color) !important;
+}
+
+.dark .text-emerald-400,
+.dark .text-emerald-500,
+.dark .text-emerald-600,
+.dark .text-accent,
+.dark .text-\[\#20C933\],
+.dark .text-\[\#087A2A\],
+.dark [class*="text-[#20C933]"] {
+  color: #ffffff !important;
+}
 
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;

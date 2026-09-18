@@ -15,6 +15,23 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-18] — Tema Escuro Global: Textos e Ícones SVG em Branco Puro & Cor Temática Exclusiva nos Elementos Especiais
+- **Tipo:** `[UI / Theme / Global Contrast Rule]`
+- **Motivo / Solicitação:** Garantir que no Tema Escuro a cor personalizada do estabelecimento seja aplicada unicamente aos elementos estruturais e especiais (bordas, linhas divisórias, fundos translúcidos, botões, anéis e badges), enquanto 100% dos textos e ícones SVG sejam exibidos em branco puro (`#ffffff !important`), eliminando textos esverdeados/coloridos que perdiam contraste no fundo escuro.
+- **Arquivos Impactados:**
+  - `src/index.css`: Definição de regras globais de alta especificidade (`.text-white`, `.dark .text-white`, `.dark svg.text-white`, `.dark .text-emerald-400`, `.dark .text-emerald-500`, `.dark .text-accent` forçando `#ffffff !important` no Dark Mode).
+  - Preservação da cor dinâmica do tema nas bordas, gradientes, fundos e estados ativos do sistema.
+- **Resultado:**
+  - Aplicação universal e consistente de textos brancos e de máxima legibilidade em todo o Dark Mode, com destaque elegante da cor do salão nos contornos e botões.
+
+### [2026-09-18] — Dashboard Profissional: Tipografia dos Indicadores e Títulos em Branco Puro (Dark Mode)
+- **Tipo:** `[UI / Theme / Contrast Polish]`
+- **Motivo / Solicitação:** Ajuste de textos e títulos do Dashboard Profissional no tema escuro para branco puro (`text-white`), garantindo que todos os indicadores de status (Hoje, Confirmados, Pendentes, Cancelados) e rótulos de seção se destaquem com máxima nitidez sobre os fundos escuros.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Os rótulos e contadores numéricos dos 4 indicadores de status no Dark Mode agora usam `text-white` e `text-white/90`, e os cabeçalhos de seção ("Próximos Clientes" e "Ver todos") passam a renderizar em branco puro.
+- **Resultado:**
+  - Legibilidade máxima e contraste impecável no Dark Mode, mantendo os fundos temáticos translúcidos e bordas especiais.
+
 ### [2026-09-18] — Navegação Inferior (BottomNav): Ícone e Texto da Aba Ativa em Branco Puro
 - **Tipo:** `[UI / Theme / Contrast Polish]`
 - **Motivo / Solicitação:** Ajuste da cor do ícone SVG e do texto do item ativo da navegação inferior para a cor branca pura (`text-white`), garantindo máxima nitidez e destaque sobre o fundo escuro com borda e glow do tema.
