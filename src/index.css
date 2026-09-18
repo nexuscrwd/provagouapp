@@ -19,6 +19,19 @@
 .hover\:bg-accent:hover { background-color: var(--accent-color); }
 .hover\:text-accent:hover { color: var(--accent-color); }
 .hover\:border-accent:hover { border-color: var(--accent-color); }
+.bg-accent-subtle { background-color: color-mix(in srgb, var(--accent-color), white 80%) !important; }
+.border-accent-subtle { border-color: color-mix(in srgb, var(--accent-color), white 50%) !important; }
+.text-accent-subtle { color: color-mix(in srgb, var(--accent-color), black 25%) !important; }
+.bg-nav-light-theme { 
+  background-color: var(--accent-color) !important; 
+  border-top-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Specific status colors that must never be altered by theme accent */
+.status-green-bg { background-color: #059669 !important; border-color: #047857 !important; }
+.status-blue-bg { background-color: #2563eb !important; border-color: #1d4ed8 !important; }
+.status-amber-bg { background-color: #fbbf24 !important; border-color: #f59e0b !important; }
+.status-rose-bg { background-color: #e11d48 !important; border-color: #be123c !important; }
 
 /* Global overrides to make emerald and custom green colors dynamic */
 .bg-emerald-500, .bg-emerald-600, .bg-emerald-400, .bg-\[\#20C933\], [class*="bg-[#20C933]"] { background-color: var(--accent-color) !important; }

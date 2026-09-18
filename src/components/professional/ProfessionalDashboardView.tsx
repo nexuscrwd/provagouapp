@@ -1,11 +1,10 @@
 import React from 'react';
 import { 
-  Store, Clock, LogOut,
-  Calendar, CalendarDays, CalendarRange
+  Store, Clock, LogOut, Calendar
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { SalonAdminSettings, CatalogServiceItem, BookingAppointment } from '../../types';
-import { hapticLight, hapticSuccess } from '../../utils/haptics';
+import { hapticLight } from '../../utils/haptics';
 
 export interface ProfessionalDashboardViewProps {
   adminSettings?: SalonAdminSettings;
@@ -202,7 +201,11 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
         isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'
       }`}>
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+          <div className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 ${
+            isDark
+              ? 'bg-emerald-500/20 border-emerald-500/40 text-white'
+              : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600'
+          }`}>
             <Store className="w-4 h-4" />
           </div>
           <div className="min-w-0">
@@ -211,7 +214,11 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
             </h2>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className={`w-2 h-2 rounded-full ${isOpen ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-rose-500'}`} />
-              <span className={`text-[10px] font-semibold uppercase tracking-wide ${isOpen ? 'text-emerald-400' : 'text-rose-400'}`}>
+              <span className={`text-[10px] font-semibold uppercase tracking-wide ${
+                isOpen 
+                  ? isDark ? 'text-white' : 'text-emerald-600'
+                  : 'text-rose-400'
+              }`}>
                 {isOpen ? 'Aberto para Atendimento' : 'Fechado no Momento'}
               </span>
             </div>
@@ -224,7 +231,9 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
             onClick={handleToggleOpen}
             className={`px-2.5 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider transition cursor-pointer border ${
               isOpen 
-                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/30' 
+                ? isDark
+                  ? 'bg-emerald-500/25 border-emerald-500/50 text-white hover:bg-emerald-500/35'
+                  : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-700 hover:bg-emerald-500/30' 
                 : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
             }`}
           >
@@ -246,142 +255,208 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
         </div>
       </div>
 
-      {/* 2. Métricas Rápidas em Grid - Filtros Interativos em Duas Linhas */}
-      <div className="p-3.5 space-y-2.5 flex-1 min-h-0 overflow-y-auto">
-        {/* Primeira Linha: Período (Próximo, Hoje, Semana, Mês) */}
-        <div className="grid grid-cols-4 gap-1.5">
-          {(
-            [
-              { id: 'proximo', label: 'Próximo', icon: Clock },
-              { id: 'hoje', label: 'Hoje', icon: Calendar },
-              { id: 'semana', label: 'Semana', icon: CalendarDays },
-              { id: 'mes', label: 'Mês', icon: CalendarRange },
-            ] as const
-          ).map((tTab) => {
-            const IconComp = tTab.icon;
-            const isActive = timeFilter === tTab.id;
+      {/* 2. Métricas Rápidas em Grid */}
+      <div className="p-2 flex flex-col gap-1 flex-1 min-h-0 overflow-y-auto">
+        
+        {/* Nova seção: Linha com Card do Cliente em Destaque (Coluna 1) e Grid 2x2 de Status (Coluna 2) */}
+        <div className="grid grid-cols-2 gap-1 items-stretch">
+          {/* Coluna 1: Card do Próximo Cliente (Div Memorizada) */}
+          <div className="flex flex-col">
+            {filteredDashboardAppointments.length > 0 ? (() => {
+              const app = filteredDashboardAppointments[0];
+              const stUpper = (app.status || '').toUpperCase();
+              const isPending = stUpper === 'PENDENTE';
+              const isAlteracao = stUpper.includes('ALTER') || stUpper.includes('REMANEJ') || stUpper.includes('REAGEND');
+              const timeLabel = app.time || '14:00';
+              const remainingTime = getRemainingTimeText(timeLabel);
 
-            // Calcular contagem de atendimentos para este período específico
-            const count = appointments.filter((app) => {
-              let appDate = new Date();
-              if (app.dateIso) {
-                appDate = new Date(app.dateIso + 'T00:00:00');
+              return (
+                <div
+                  key={app.protocolCode || 'featured-top'}
+                  className={`p-2 rounded-lg border flex flex-col justify-between gap-1 h-full select-none transition relative overflow-hidden ${
+                    isDark
+                      ? 'bg-slate-900 border-slate-800 text-white'
+                      : 'bg-white border-slate-200 shadow-xs text-slate-900'
+                  }`}
+                >
+                  {/* Top: Hora & Status */}
+                  <div className="flex items-center justify-between gap-1">
+                    <div className={`flex items-center gap-1 font-black text-[10px] shrink-0 ${
+                      isDark
+                        ? 'bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded text-white'
+                        : 'text-emerald-600 bg-transparent border-0 px-0 py-0'
+                    }`}>
+                      <Clock className={`w-2.5 h-2.5 shrink-0 ${isDark ? 'text-white' : 'text-emerald-600'}`} />
+                      <span>{timeLabel}</span>
+                    </div>
+
+                    <span className={`text-[8.5px] font-bold uppercase tracking-wide shrink-0 ${
+                      isDark
+                        ? isAlteracao || isPending
+                          ? 'px-1.5 py-0.5 rounded bg-amber-500/20 text-white border border-amber-500/40 font-extrabold'
+                          : stUpper === 'CANCELADO'
+                          ? 'px-1.5 py-0.5 rounded bg-rose-500/25 text-white border border-rose-500/40 font-extrabold'
+                          : stUpper === 'CONCLUÍDO' || stUpper === 'CONCLUIDO'
+                          ? 'px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-bold'
+                          : 'px-1.5 py-0.5 rounded bg-emerald-500/20 text-white border border-emerald-500/40 font-extrabold'
+                        : isAlteracao || isPending
+                        ? 'text-amber-600 font-extrabold bg-transparent border-0 px-0 py-0'
+                        : stUpper === 'CANCELADO'
+                        ? 'text-rose-600 font-extrabold bg-transparent border-0 px-0 py-0'
+                        : stUpper === 'CONCLUÍDO' || stUpper === 'CONCLUIDO'
+                        ? 'text-slate-500 font-bold bg-transparent border-0 px-0 py-0'
+                        : 'text-emerald-600 font-extrabold bg-transparent border-0 px-0 py-0'
+                    }`}>
+                      {isAlteracao ? 'Alteração' : isPending ? 'Pendente' : stUpper === 'CANCELADO' ? 'Cancelado' : stUpper === 'CONCLUÍDO' || stUpper === 'CONCLUIDO' ? 'Concluído' : 'Confirmado'}
+                    </span>
+                  </div>
+
+                  {/* Cliente e Serviço */}
+                  <div className="min-w-0 space-y-0.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <div className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-black shrink-0 ${
+                        isDark
+                          ? 'bg-emerald-500/20 border border-emerald-500/40 text-white'
+                          : 'bg-slate-900 text-white shadow-2xs'
+                      }`}>
+                        {(app.customerName || app.clientName || 'C')[0].toUpperCase()}
+                      </div>
+                      <p className={`text-[12px] font-black truncate leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        {app.customerName || app.clientName || 'Cliente'}
+                      </p>
+                    </div>
+
+                    <p className={`text-[9.5px] truncate font-medium ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
+                      {app.service || app.serviceTitle || 'Serviço'}
+                    </p>
+                  </div>
+
+                  {/* Rodapé: Tempo Restante */}
+                  <div className={`pt-1 border-t flex items-center justify-between text-[9px] ${
+                    isDark ? 'border-slate-800/80' : 'border-slate-100'
+                  }`}>
+                    <span className={`font-bold truncate font-mono text-[9px] ${
+                      isDark ? 'text-white' : 'text-slate-700'
+                    }`}>
+                      {remainingTime}
+                    </span>
+                  </div>
+                </div>
+              );
+            })() : (
+              <div className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center h-full ${
+                isDark ? 'bg-slate-900/50 border-slate-800 text-slate-500' : 'bg-white border-slate-200 text-slate-400'
+              }`}>
+                <Clock className="w-4 h-4 mb-0.5 opacity-50" />
+                <p className="text-[10px] font-semibold">Sem atendimento</p>
+              </div>
+            )}
+          </div>
+
+          {/* Coluna 2: Contêiner dos 4 Indicadores de Status (Grid 2x2) */}
+          <div 
+            id="professional-status-indicators-container" 
+            className={`grid grid-cols-2 gap-1 p-1 rounded-lg border ${
+              isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-slate-100/70 border-slate-200'
+            }`}
+          >
+            {(
+              [
+                { id: 'hoje', label: 'Hoje', icon: Calendar },
+                { id: 'confirmados', label: 'Confirmado' },
+                { id: 'pendentes', label: 'Pendentes' },
+                { id: 'cancelados', label: 'Cancelados' },
+              ] as const
+            ).map((item) => {
+              const isTimeFilter = item.id === 'hoje';
+              const isActive = isTimeFilter ? timeFilter === item.id : statusFilter === item.id;
+              
+              let count = 0;
+              if (isTimeFilter) {
+                 count = appointments.filter((app) => {
+                  const appDate = app.dateIso ? new Date(app.dateIso + 'T00:00:00') : new Date();
+                  const now = new Date();
+                  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+                  return appDate >= todayStart && appDate <= todayEnd;
+                 }).length;
               } else {
-                const match = app.dateTime?.match(/(\d{2})\/(\d{2})/);
-                if (match) {
-                  const day = parseInt(match[1], 10);
-                  const month = parseInt(match[2], 10) - 1;
-                  const year = new Date().getFullYear();
-                  appDate = new Date(year, month, day);
-                } else if (app.dayGroup === 'Hoje' || app.dateTime?.includes('Hoje')) {
-                  appDate = new Date();
-                }
+                 count = categoryCounts[item.id] || 0;
               }
-              const now = new Date();
-              const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-              const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
-              if (tTab.id === 'hoje') {
-                return appDate >= todayStart && appDate <= todayEnd;
-              } else if (tTab.id === 'proximo') {
-                return appDate >= todayStart;
-              } else if (tTab.id === 'semana') {
-                const sunday = new Date(todayStart);
-                sunday.setDate(todayStart.getDate() - todayStart.getDay());
-                const saturday = new Date(sunday);
-                saturday.setDate(sunday.getDate() + 6);
-                saturday.setHours(23, 59, 59, 999);
-                return appDate >= sunday && appDate <= saturday;
-              } else if (tTab.id === 'mes') {
-                return appDate.getMonth() === now.getMonth() && appDate.getFullYear() === now.getFullYear();
+              // Definição de cores de fundo vibrantes por item no Tema Claro
+              let lightCardClass = '';
+              let lightNumberClass = '';
+              let lightLabelClass = '';
+
+              if (item.id === 'hoje') {
+                // Azul
+                lightCardClass = 'status-blue-bg shadow-xs';
+                lightLabelClass = 'text-blue-100';
+                lightNumberClass = 'text-white';
+              } else if (item.id === 'confirmados') {
+                // Verde (REGRA INEGOCIÁVEL: FUNDO VERDE = TEXTO BRANCO)
+                lightCardClass = 'status-green-bg shadow-xs';
+                lightLabelClass = 'text-emerald-100';
+                lightNumberClass = 'text-white';
+              } else if (item.id === 'pendentes') {
+                // Amarelo
+                lightCardClass = 'status-amber-bg shadow-xs';
+                lightLabelClass = 'text-amber-950 font-extrabold';
+                lightNumberClass = 'text-slate-950';
+              } else if (item.id === 'cancelados') {
+                // Vermelho
+                lightCardClass = 'status-rose-bg shadow-xs';
+                lightLabelClass = 'text-rose-100';
+                lightNumberClass = 'text-white';
               }
-              return true;
-            }).length;
 
-            return (
-              <button
-                key={tTab.id}
-                type="button"
-                onClick={() => {
-                  hapticLight();
-                  setTimeFilter(tTab.id);
-                }}
-                className={`p-2 rounded-lg border flex flex-col justify-between items-start text-left transition cursor-pointer active:scale-97 select-none aspect-square w-full ${
-                  isActive
-                    ? 'bg-emerald-500 border-emerald-500 text-white font-bold shadow-xs'
-                    : isDark
-                    ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                    : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-center justify-between w-full mb-0.5 min-w-0">
-                  <span className="text-[8.5px] font-bold uppercase tracking-tight whitespace-nowrap truncate">
-                    {tTab.label}
-                  </span>
-                  <IconComp className={`w-2.5 h-2.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+              // Estilos no Dark Mode (fundos temáticos com transparência elegante para manter harmonia dark)
+              let darkCardClass = 'bg-slate-900 border-slate-800';
+              let darkLabelClass = 'text-slate-400';
+              let darkNumberClass = 'text-slate-100';
+
+              if (item.id === 'hoje') {
+                darkCardClass = 'bg-blue-950/60 border-blue-800/80';
+                darkLabelClass = 'text-blue-300';
+                darkNumberClass = 'text-blue-100';
+              } else if (item.id === 'confirmados') {
+                darkCardClass = 'bg-emerald-950/60 border-emerald-800/80';
+                darkLabelClass = 'text-emerald-300';
+                darkNumberClass = 'text-emerald-100';
+              } else if (item.id === 'pendentes') {
+                darkCardClass = 'bg-amber-950/60 border-amber-800/80';
+                darkLabelClass = 'text-amber-300';
+                darkNumberClass = 'text-amber-100';
+              } else if (item.id === 'cancelados') {
+                darkCardClass = 'bg-rose-950/60 border-rose-800/80';
+                darkLabelClass = 'text-rose-300';
+                darkNumberClass = 'text-rose-100';
+              }
+
+              return (
+                <div
+                  key={item.id}
+                  className={`p-1.5 rounded-lg border flex flex-col justify-between items-start text-left select-none w-full h-16 ${
+                    isDark ? darkCardClass : lightCardClass
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className={`text-[8px] font-bold uppercase tracking-tight ${
+                      isDark ? darkLabelClass : lightLabelClass
+                    }`}>
+                      {item.label}
+                    </span>
+                  </div>
+                  <p className={`text-lg font-black leading-none ${
+                    isDark ? darkNumberClass : lightNumberClass
+                  }`}>
+                    {count}
+                  </p>
                 </div>
-                <p className={`text-xl font-black leading-none ${isActive ? 'text-white' : isDark ? 'text-slate-100' : 'text-slate-900'}`}>
-                  {count}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Segunda Linha: Status (Confirmado, Pendentes, Concluidos, Cancelados) */}
-        <div className="grid grid-cols-4 gap-1.5">
-          {(
-            [
-              { id: 'confirmados', label: 'Confirmado' },
-              { id: 'pendentes', label: 'Pendentes' },
-              { id: 'concluidos', label: 'Concluído' },
-              { id: 'cancelados', label: 'Cancelados' },
-            ] as const
-          ).map((sTab) => {
-            const isActive = statusFilter === sTab.id;
-            const count = categoryCounts[sTab.id] || 0;
-
-            // Cores de destaques e contraste oposto rígido
-            let activeClass = 'bg-emerald-500 border-emerald-500 text-white font-bold shadow-xs';
-            if (sTab.id === 'pendentes') {
-              activeClass = 'bg-amber-500 border-amber-500 text-slate-950 font-bold shadow-xs';
-            } else if (sTab.id === 'cancelados') {
-              activeClass = 'bg-rose-500 border-rose-500 text-white font-bold shadow-xs';
-            } else if (sTab.id === 'concluidos') {
-              activeClass = 'bg-slate-700 border-slate-600 text-white font-bold shadow-xs';
-            }
-
-            return (
-              <button
-                key={sTab.id}
-                type="button"
-                onClick={() => {
-                  hapticLight();
-                  setStatusFilter(sTab.id);
-                }}
-                className={`p-2 rounded-lg border flex flex-col justify-between items-start text-left transition cursor-pointer active:scale-97 select-none aspect-square w-full ${
-                  isActive
-                    ? activeClass
-                    : isDark
-                    ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                    : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-center justify-between w-full mb-0.5 min-w-0">
-                  <span className="text-[8.5px] font-bold uppercase tracking-tight whitespace-nowrap truncate">
-                    {sTab.label}
-                  </span>
-                </div>
-                <p className={`text-xl font-black leading-none ${
-                  isActive
-                    ? sTab.id === 'pendentes' ? 'text-slate-950' : 'text-white'
-                    : isDark ? 'text-slate-100' : 'text-slate-900'
-                }`}>
-                  {count}
-                </p>
-              </button>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* 4. Próximos Atendimentos */}
@@ -410,7 +485,7 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
               <p className="text-[10px] mt-0.5 text-slate-500">Altere os filtros acima para ver outros atendimentos.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-stretch gap-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar snap-x snap-mandatory scroll-smooth touch-pan-x">
               {filteredDashboardAppointments.slice(0, 8).map((app, idx) => {
                 const stUpper = (app.status || '').toUpperCase();
                 const isPending = stUpper === 'PENDENTE';
@@ -421,27 +496,41 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
                 return (
                   <div
                     key={app.protocolCode || idx}
-                    className={`p-2.5 rounded-[4px] border flex flex-col justify-between gap-2 transition relative overflow-hidden ${
+                    className={`w-[175px] shrink-0 p-2.5 rounded-[4px] border flex flex-col justify-between gap-2 transition relative overflow-hidden snap-start ${
                       isDark ? 'bg-slate-900 border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs'
                     }`}
                   >
                     {/* Cabeçalho do Card: Destaque da Próxima Hora & Badge de Status */}
                     <div className="flex items-center justify-between gap-1">
-                      <div className="flex items-center gap-1 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded-[4px] text-emerald-400 font-black text-[11px] shrink-0">
-                        <Clock className="w-3 h-3 text-emerald-400 shrink-0" />
+                      <div className={`flex items-center gap-1 font-black text-[11px] shrink-0 ${
+                        isDark
+                          ? 'bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded-[4px] text-white'
+                          : 'text-emerald-600 bg-transparent border-0 px-0 py-0'
+                      }`}>
+                        <Clock className={`w-3 h-3 shrink-0 ${isDark ? 'text-white' : 'text-emerald-600'}`} />
                         <span>{timeLabel}</span>
                       </div>
 
-                      <span className={`px-1.5 py-0.5 rounded-[4px] text-[8.5px] font-bold uppercase tracking-wide shrink-0 ${
-                        isAlteracao
-                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
+                      <span className={`text-[9px] font-bold uppercase tracking-wide shrink-0 ${
+                        isDark
+                          ? isAlteracao
+                            ? 'px-1.5 py-0.5 rounded-[4px] bg-amber-500/20 text-white border border-amber-500/40 font-extrabold' 
+                            : isPending
+                            ? 'px-1.5 py-0.5 rounded-[4px] bg-amber-500/20 text-white border border-amber-500/40 font-extrabold'
+                            : stUpper === 'CANCELADO'
+                            ? 'px-1.5 py-0.5 rounded-[4px] bg-rose-500/25 text-white border border-rose-500/40 font-extrabold'
+                            : stUpper === 'CONCLUÍDO' || stUpper === 'CONCLUIDO'
+                            ? 'px-1.5 py-0.5 rounded-[4px] bg-slate-800 text-slate-300 border border-slate-700 font-bold'
+                            : 'px-1.5 py-0.5 rounded-[4px] bg-emerald-500/20 text-white border border-emerald-500/40 font-extrabold'
+                          : isAlteracao
+                          ? 'text-amber-600 font-extrabold bg-transparent border-0 px-0 py-0'
                           : isPending
-                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                          ? 'text-amber-600 font-extrabold bg-transparent border-0 px-0 py-0'
                           : stUpper === 'CANCELADO'
-                          ? 'bg-rose-500/25 text-rose-400 border border-rose-500/35'
+                          ? 'text-rose-600 font-extrabold bg-transparent border-0 px-0 py-0'
                           : stUpper === 'CONCLUÍDO' || stUpper === 'CONCLUIDO'
-                          ? 'bg-slate-800 text-slate-400 border border-slate-700'
-                          : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          ? 'text-slate-500 font-bold bg-transparent border-0 px-0 py-0'
+                          : 'text-emerald-600 font-extrabold bg-transparent border-0 px-0 py-0'
                       }`}>
                         {isAlteracao ? 'Alteração' : isPending ? 'Pendente' : stUpper === 'CANCELADO' ? 'Cancelado' : stUpper === 'CONCLUÍDO' || stUpper === 'CONCLUIDO' ? 'Concluído' : 'Confirmado'}
                       </span>
@@ -450,7 +539,11 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
                     {/* Informações do Cliente & Descrição do Serviço */}
                     <div className="min-w-0 space-y-1">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <div className="w-5 h-5 rounded-[4px] bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-[9px] font-black shrink-0">
+                        <div className={`w-5 h-5 rounded-[4px] border flex items-center justify-center text-[9px] font-black shrink-0 ${
+                          isDark
+                            ? 'bg-emerald-500/20 border-emerald-500/40 text-white'
+                            : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600'
+                        }`}>
                           {(app.customerName || app.clientName || 'C')[0].toUpperCase()}
                         </div>
                         <p className={`text-xs font-bold truncate leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
@@ -458,14 +551,16 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
                         </p>
                       </div>
 
-                      <p className="text-[10px] text-slate-400 truncate font-medium">
+                      <p className={`text-[10px] truncate font-medium ${isDark ? 'text-slate-300' : 'text-slate-400'}`}>
                         {app.service || app.serviceTitle || 'Serviço do Cliente'}
                       </p>
                     </div>
 
                     {/* Rodapé: Tempo Restante Formatado (Sem valor R$) */}
                     <div className="pt-1.5 border-t border-slate-800/60 flex items-center justify-between text-[10px]">
-                      <span className="font-bold text-emerald-400 truncate tracking-tight font-mono text-[10px]">
+                      <span className={`font-bold truncate tracking-tight font-mono text-[10px] ${
+                        isDark ? 'text-white' : 'text-emerald-600'
+                      }`}>
                         {remainingTime}
                       </span>
                     </div>
@@ -475,15 +570,6 @@ export const ProfessionalDashboardView: React.FC<ProfessionalDashboardViewProps>
             </div>
           )}
         </div>
-      </div>
-
-      {/* 5. Rodapé Informativo */}
-      <div className={`p-2.5 border-t text-center shrink-0 ${
-        isDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-slate-100'
-      }`}>
-        <p className="text-[9px] text-slate-400 font-medium">
-          Painel do Profissional • VagouApp v3.0
-        </p>
       </div>
     </div>
   );

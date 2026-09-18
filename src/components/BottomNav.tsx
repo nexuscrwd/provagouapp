@@ -67,7 +67,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     <nav className={`flex-shrink-0 w-full h-[70px] ${
       isDark
         ? 'bg-[#151A1E]/95 border-slate-800/90 shadow-[0_-4px_16px_rgba(0,0,0,0.5)]'
-        : 'bg-white/95 border-slate-200/90 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]'
+        : 'bg-nav-light-theme shadow-[0_-4px_20px_rgba(0,0,0,0.15)] text-white'
     } backdrop-blur-md border-t px-2 sm:px-3 py-1 my-0 mx-0 flex items-center justify-around z-30 transition-colors`}>
       {establishmentTabs.map((tab) => {
         const Icon = tab.icon;
@@ -83,21 +83,21 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             }}
             className="flex flex-col items-center justify-center gap-1 py-1 px-2 sm:px-3 transition active:scale-95 cursor-pointer group"
           >
-            <div className={`w-[34px] h-[34px] rounded flex items-center justify-center transition-all ${
+            <div className={`w-[34px] h-[34px] rounded-lg flex items-center justify-center transition-all ${
               isActive
                 ? isDark
-                  ? 'bg-accent/20 border border-accent text-accent scale-105 shadow-[0_0_12px_var(--accent-color)]/25'
-                  : 'bg-accent/10 border border-accent text-accent scale-105 shadow-[0_0_12px_var(--accent-color)]/20'
+                  ? 'bg-accent/20 border border-accent text-white scale-105 shadow-[0_0_12px_var(--accent-color)]/25'
+                  : 'bg-white text-slate-900 border border-white scale-105 shadow-sm'
                 : isDark
                   ? 'text-slate-400 hover:text-slate-200'
-                  : 'text-slate-500 hover:text-slate-900'
+                  : 'text-white/80 hover:text-white hover:bg-white/15'
             }`}>
               <Icon className="w-5 h-5 stroke-[2.2]" />
             </div>
-            <span className={`text-[10px] tracking-wide font-['Poppins'] font-bold truncate max-w-[64px] ${
+            <span className={`text-[10px] tracking-wide font-['Poppins'] font-bold truncate max-w-[64px] transition-colors ${
               isActive
-                ? 'text-accent'
-                : isDark ? 'text-slate-400' : 'text-slate-500'
+                ? isDark ? 'text-white' : 'text-white font-extrabold'
+                : isDark ? 'text-slate-400' : 'text-white/80'
             }`}>
               {tab.label}
             </span>

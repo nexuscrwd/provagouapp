@@ -15,6 +15,152 @@ Este arquivo registra cronologicamente todas as modificações relevantes realiz
 
 ## 📜 Registros de Alterações
 
+### [2026-09-18] — Navegação Inferior (BottomNav): Ícone e Texto da Aba Ativa em Branco Puro
+- **Tipo:** `[UI / Theme / Contrast Polish]`
+- **Motivo / Solicitação:** Ajuste da cor do ícone SVG e do texto do item ativo da navegação inferior para a cor branca pura (`text-white`), garantindo máxima nitidez e destaque sobre o fundo escuro com borda e glow do tema.
+- **Arquivos Impactados:**
+  - `src/components/BottomNav.tsx`: O ícone SVG da aba selecionada (ex.: Início) e seu respectivo rótulo de texto agora utilizam `text-white` no modo escuro, mantendo o fundo translúcido e borda refinada na cor do tema do salão.
+- **Resultado:**
+  - Contraste visual perfeito, eliminando qualquer texto ou ícone de baixa visibilidade e destacando o botão ativo de forma limpa e sofisticada.
+
+### [2026-09-18] — Tema Escuro: Elementos Especiais com Cor Temática e Textos/Ícones em Branco Puro
+- **Tipo:** `[UI / Theme / Contrast Rule]`
+- **Motivo / Solicitação:** No tema escuro, a cor selecionada pelo estabelecimento passa a ser aplicada exclusivamente aos elementos especiais (bordas, linhas divisórias, fundos translúcidos de destaque e botões), enquanto todos os textos e ícones SVG internos passam a ser renderizados em branco puro (`text-white`), garantindo contraste e nitidez no fundo escuro.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`:
+    - **Header Operacional**: Ícone de loja, botão e status "Aberto" com borda e fundo da cor do tema, e ícone/texto em branco puro (`text-white`).
+    - **Card de Destaque & Carrossel de Atendimentos**: Pílulas de horário, status dos clientes e avatares exibem bordas acentuadas com fundo temático, enquanto ícones de relógio, textos de hora, nomes de status e contadores de tempo restante são 100% brancos (`text-white`).
+- **Resultado:**
+  - O tema escuro atinge contraste máximo, eliminando textos coloridos sobre fundos escuros que prejudicavam a leitura e valorizando as cores temáticas nas molduras e fundos especiais.
+
+### [2026-09-18] — Cards de Atendimento: Remoção de Fundo e Bordas dos Badges no Tema Claro
+- **Tipo:** `[UI / Theme / Flat & Minimalist]`
+- **Motivo / Solicitação:** Remover fundos de pílulas e bordas nos indicadores de horário e status dos atendimentos no tema claro, deixando apenas o texto colorido tipográfico (`text-emerald-600`, `text-amber-600`, `text-rose-600`).
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: 
+    - No carrossel de próximos clientes e no card de destaque, os badges de horário e status agora são 100% planos e sem contorno (`bg-transparent border-0 px-0 py-0`), preservando a cor tipográfica pura e vibrante de cada status.
+    - No modo escuro, mantidas as pílulas translúcidas originais com bordas sutis.
+- **Resultado:**
+  - Visual ultra limpo, moderno e direto, eliminando a poluição visual de múltiplas caixinhas empilhadas e destacando as informações com tipografia pura e elegante.
+
+### [2026-09-18] — Barra de Navegação Inferior (NAV): Cor do Tema com Tipografia 100% Branca (Tema Claro)
+- **Tipo:** `[UI / Theme / Contrast & Branding]`
+- **Motivo / Solicitação:** Aplicação da cor selecionada do tema como fundo completo da barra de navegação (`<nav>`) no tema claro, com tipografia e ícones em branco de alto contraste.
+- **Arquivos Impactados:**
+  - `src/index.css`: A classe `.bg-nav-light-theme` agora aplica a cor completa do tema (`var(--accent-color) !important`) com borda superior translúcida refinada (`rgba(255, 255, 255, 0.2)`).
+  - `src/components/BottomNav.tsx`: No tema claro, as legendas e ícones dos botões agora são brancos (`text-white` e `text-white/80`), e o item ativo recebe um badge de destaque com fundo branco sólido (`bg-white text-slate-900 shadow-sm`).
+- **Resultado:**
+  - Visual vibrante, imersivo e de alta fidelidade à cor do estabelecimento, garantindo legibilidade perfeita e obediência estrita à regra de fundo colorido com texto branco de alto contraste.
+
+### [2026-09-18] — Barra de Navegação Inferior (NAV): Intensificação do Tom de Fundo Temático
+- **Tipo:** `[UI / Theme / Color Wash Adjustment]`
+- **Motivo / Solicitação:** Aumento da intensidade e presença da cor do tema no fundo da barra de navegação inferior (`<nav>`) no tema claro, tornando a tonalidade mais evidente e perceptível.
+- **Arquivos Impactados:**
+  - `src/index.css`: Ajustado `.bg-nav-light-theme` de 94% para **84% de branco** (`color-mix(in srgb, var(--accent-color), white 84%)`) e borda superior para 65% de branco; intensificados os botões ativos com 80% de fundo e 50% de borda.
+  - `src/components/BottomNav.tsx`: Melhorado o contraste dos ícones e textos inativos sobre o fundo colorido sutil (`text-slate-700/80` e `hover:bg-white/40`).
+- **Resultado:**
+  - A barra inferior agora exibe uma coloração temática clara, vívida e evidente, sem ofuscar o conteúdo da página.
+
+### [2026-09-18] — Barra de Navegação Inferior (NAV): Fundo com Coloração Leve e Sutil do Tema
+- **Tipo:** `[UI / Theme / Color Wash]`
+- **Motivo / Solicitação:** Aplicar no tema claro uma coloração de fundo no próprio contêiner da barra de navegação inferior (`<nav>`) de acordo com a cor do tema configurada pelo usuário, com ênfase em uma tonalidade ultra leve, sutil e agradável.
+- **Arquivos Impactados:**
+  - `src/index.css`: Criada a classe `.bg-nav-light-theme` que utiliza `color-mix(in srgb, var(--accent-color), white 94%)` para o fundo e `white 80%` para a linha superior divisória (`border-top-color`).
+  - `src/components/BottomNav.tsx`: Aplicada a classe `.bg-nav-light-theme` na tag `<nav>` no tema claro, substituindo o branco genérico por uma atmosfera personalizada e sutil.
+- **Resultado:**
+  - A barra inferior adota um suave "banho de cor" (washout tonal pastel 94% branco) sincronizado com a cor escolhida pelo salão, mantendo a tela fresca, integrada e sem saturação pesada.
+
+### [2026-09-18] — Navegação Inferior (BottomNav): Acentuação Leve e Sutil no Tema Claro
+- **Tipo:** `[UI / Theme / Polish]`
+- **Motivo / Solicitação:** No tema claro, aplicar coloração de acordo com a cor do tema do usuário no item da navegação (NAV) selecionado, com ênfase em uma tonalidade mais leve, suave e sutil (pastel contemporâneo).
+- **Arquivos Impactados:**
+  - `src/index.css`: Criadas as classes de acentuação sutil `.bg-accent-subtle` (`color-mix(in srgb, var(--accent-color), white 90%)`), `.border-accent-subtle` (`color-mix(in srgb, var(--accent-color), white 70%)`) e `.text-accent-subtle` (`color-mix(in srgb, var(--accent-color), black 15%)`).
+  - `src/components/BottomNav.tsx`: O item selecionado no tema claro agora exibe fundo suave translúcido pastel harmonizado com a cor do tema ativo, borda delicada e ícone/rótulo com contraste agradável sem saturação agressiva.
+- **Resultado:**
+  - O NAV selecionado reflete a identidade de cor personalizada com elegância visual, suavidade e máxima legibilidade.
+
+### [2026-09-18] — Painel Profissional: Remoção do Rodapé Informativo (Clean Layout)
+- **Tipo:** `[UI / Cleanup / Mobile UX]`
+- **Motivo / Solicitação:** Remover a barra de rodapé informativa ("Painel do Profissional • VagouApp v3.0") selecionada pelo usuário, liberando espaço vertical útil e eliminando poluição visual.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Removido o contêiner inferior fixo de rodapé.
+- **Resultado:**
+  - Layout mais limpo, amplo e focado exclusivamente nas ações e dados operacionais da rotina do profissional.
+
+### [2026-09-18] — Painel Profissional: Card do Próximo Cliente com Fundo Branco & Contraste Automático
+- **Tipo:** `[UI / Theme / Polish]`
+- **Motivo / Solicitação:** Ajuste fino solicitado pelo usuário: fundo branco puro (`bg-white border-slate-200 shadow-xs`) com contraste tipográfico automático (`text-slate-900` para o cliente e `text-slate-500` para o serviço), mantendo o tema escuro adaptado (`bg-slate-900 border-slate-800 text-white`).
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Aplicado fundo branco no tema claro com pílula de horário neutra (`bg-slate-100 text-slate-800`), tag de status legível, avatar escuro (`bg-slate-900 text-white`) e textos em ardósia escuro de alto contraste.
+- **Resultado:**
+  - Visual ultra clean, leve e refinado, sem conflito com as 4 cores de status da direita e com legibilidade perfeita em qualquer iluminação.
+
+### [2026-09-18] — Painel Profissional: Blindagem das Cores dos Cards contra Sobrescrita do Accent Color
+- **Tipo:** `[Fix / UI / CSS]`
+- **Motivo / Solicitação:** O estabelecimento estava com cor de destaque bordô/vinho configurada no perfil, e a regra global CSS `.bg-emerald-600` estava forçando `var(--accent-color) !important`, fazendo o card do próximo cliente e o card de Confirmados ficarem vermelhos/bordô em vez de verde.
+- **Arquivos Impactados:**
+  - `src/index.css`: Criadas classes de proteção de status (`.status-green-bg`, `.status-blue-bg`, `.status-amber-bg`, `.status-rose-bg`) com cores absolutas e prioritárias (`#059669` para verde esmeralda).
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Aplicadas as classes `.status-green-bg` no card do próximo cliente e nos indicadores de status correspondentes.
+- **Resultado:**
+  - O card do próximo cliente e o card "Confirmado" agora exibem **verde esmeralda autêntico**, independentemente de qualquer cor de personalização selecionada pelo estabelecimento.
+
+### [2026-09-18] — Painel Profissional: Design Verde Sólido no Card do Próximo Cliente (Tema Claro)
+- **Tipo:** `[UI / Theme / Contrast]`
+- **Motivo / Solicitação:** Aplicar design com fundo verde no card do próximo cliente no tema claro, garantindo rigorosamente contraste e legibilidade com texto e ícones 100% brancos.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Aplicado fundo `bg-emerald-600 border-emerald-700` no tema claro com tipografia e ícones `text-white`, avatar com fundo contrastante branco e subtítulo em `text-emerald-100`.
+- **Resultado:**
+  - Card de destaque do próximo atendimento com alta distinção visual e aderência estrita à regra de fundo verde com texto branco.
+
+### [2026-09-18] — Painel Profissional: Carrossel Horizontal com Swipe para Próximos Clientes
+- **Tipo:** `[Refactor / UI / Mobile UX]`
+- **Motivo / Solicitação:** Converter a listagem de próximos clientes de grade 2 colunas para uma única linha com efeito de carrossel deslizante por toque (swipe/snap-scroll).
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Substituída a classe `grid grid-cols-2` por contêiner flexível horizontal com `overflow-x-auto`, `snap-x snap-mandatory`, `touch-pan-x` e barra oculta (`no-scrollbar`).
+- **Resultado:**
+  - Navegação suave e fluida em linha única com suporte a swipe mobile nativo para percorrer os próximos clientes.
+
+### [2026-09-18] — Painel Profissional: Cores de Fundo Sólidas nos Cards de Status
+- **Tipo:** `[UI / Theme / Color]`
+- **Motivo / Solicitação:** Preenchimento completo das cores de fundo dos cards informativos no contêiner: Hoje (Azul), Confirmados (Verde com texto branco), Pendentes (Amarelo com texto escuro) e Cancelados (Vermelho com texto branco).
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Aplicadas classes de preenchimento de fundo sólido (`bg-blue-600`, `bg-emerald-600`, `bg-amber-400`, `bg-rose-600`) com máxima legibilidade e contraste WCAG AA, além de tons translúcidos temáticos no modo escuro.
+- **Resultado:**
+  - Cards com destaque visual e preenchimento sólido em cada status.
+
+### [2026-09-18] — Painel Profissional: Conversão dos Status em Cards Informativos
+- **Tipo:** `[Refactor / UI / UX]`
+- **Motivo / Solicitação:** Converter os elementos de status do contêiner em apenas cards informativos (div), removendo o formato de botão, estados de clique e cursor pointer.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Substituída a tag `<button>` por `<div>`, preservando os esquemas cromáticos de cada status no tema claro e escuro como painéis puramente informativos.
+- **Resultado:**
+  - Elementos limpos e dedicados exclusivamente à exibição de métricas sem comportamento de botão.
+
+### [2026-09-18] — Painel Profissional: Cores Temáticas nos Indicadores de Status (Tema Claro)
+- **Tipo:** `[Feat / UI / Theme]`
+- **Motivo / Solicitação:** No tema claro, colorir individualmente os botões do contêiner de status: Hoje (Azul), Confirmados (Verde), Pendentes (Amarelo) e Cancelados (Vermelho).
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Aplicadas classes refinadas de alto contraste para o tema claro com tons correspondentes em repouso e ativos, respeitando contraste WCAG AA e a regra inegociável de fundo verde com texto branco.
+- **Resultado:**
+  - Identificação visual imediata de cada categoria de status no tema claro com harmonia e legibilidade impecáveis.
+
+### [2026-09-18] — Painel Profissional: Agrupamento Estrutural dos 4 Indicadores de Status
+- **Tipo:** `[Refactor / UI / Layout]`
+- **Motivo / Solicitação:** Agrupar os 4 elementos de status (Hoje, Confirmados, Pendentes, Cancelados) em um único contêiner sem alterar tamanhos ou alinhamentos, formalizando a relação semântica do grupo.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Envolvidos os 4 botões de status num contêiner estrutural unificado (`#professional-status-indicators-container`).
+- **Resultado:**
+  - Código semanticamente agrupado mantendo o layout e as dimensões intactas.
+
+### [2026-09-18] — Painel Profissional: Posicionamento do Card de Próximo Cliente no Grid Superior
+- **Tipo:** `[Refactor / UI / UX]`
+- **Motivo / Solicitação:** Remoção dos botões de métricas temporais (Próximo, Semana, Mês) e posicionamento direto do card do próximo cliente no topo, na coluna 1 ao lado do grid 2x2 de status de agendamentos.
+- **Arquivos Impactados:**
+  - `src/components/professional/ProfessionalDashboardView.tsx`: Substituída a coluna de botões temporais pelo card do próximo cliente com horário, badge de status, nome do cliente, serviço e tempo restante, ocupando a coluna esquerda lado a lado com os 4 botões de status. Removidos imports não utilizados (`CalendarDays`, `CalendarRange`, `hapticSuccess`).
+- **Resultado:**
+  - Acesso imediato visual ao próximo atendimento do dia lado a lado com as contagens de status (Hoje, Confirmados, Pendentes, Cancelados), com layout mais limpo e sem poluição.
+
+
 ### [2026-09-18] — Sincronização Dinâmica do Cabeçalho do Celular (theme-color) e Nomes PWA
 - **Tipo:** `[Feat / UX / Mobile PWA]`
 - **Motivo / Solicitação:** Na tela inicial do celular havia dois ícones com o mesmo nome "Vagou" (Portal vs Meu Negócio). Além disso, a barra superior de status do celular (hora, bateria, sinal) ficava verde fixa em vez de acompanhar a cor personalizada do tema.
